@@ -1,7 +1,7 @@
 import { sb, hasSupabase } from './supabase'
 import type { Branch, Category, Post, Product, Review } from './types'
 
-const PRODUCT_SELECT = '*, product_images(url,alt,sort), product_variants(id,product_id,label,color,size,fabric,price,stock), categories(slug,name)'
+const PRODUCT_SELECT = '*, product_images(url,alt,sort), product_variants(id,product_id,label,color,size,fabric,price,stock,sort), categories(slug,name)'
 
 async function safe<T>(fn: () => PromiseLike<{ data: T | null; error: unknown }>, fallback: T): Promise<T> {
   if (!hasSupabase) return fallback
@@ -14,9 +14,10 @@ async function safe<T>(fn: () => PromiseLike<{ data: T | null; error: unknown }>
 
 export const getCategories = () => safe<Category[]>(() => sb().from('categories').select('*').order('sort'), [])
 export const getBranches = () => safe<Branch[]>(() => sb().from('branches').select('*').eq('is_active', true).order('sort'), [])
-export const getProducts = () => safe<Product[]>(() => sb().from('products').select(PRODUCT_SELECT).order('sort') as never, [])
+const ordered = (l: Product[]) => l.map((p) => ({ ...p, product_variants: [...p.product_variants].sort((a, b) => ((a as { sort?: number }).sort ?? 0) - ((b as { sort?: number }).sort ?? 0)) }))
+export const getProducts = async () => ordered(await safe<Product[]>(() => sb().from('products').select(PRODUCT_SELECT).order('sort') as never, []))
 export async function getProduct(slug: string) {
-  const r = await safe<Product[]>(() => sb().from('products').select(PRODUCT_SELECT).eq('slug', slug).limit(1) as never, [])
+  const r = ordered(await safe<Product[]>(() => sb().from('products').select(PRODUCT_SELECT).eq('slug', slug).limit(1) as never, []))
   return r[0] ?? null
 }
 export const getPosts = () => safe<Post[]>(() => sb().from('posts').select('slug,title,excerpt,body,cover_url,published_at').eq('published', true).order('published_at', { ascending: false }), [])
