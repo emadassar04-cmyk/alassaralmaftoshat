@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { requireStaff, PAYMENT_AR, STATUS_AR, STATUS_TONE, dt } from '@/lib/admin'
 import { fmt } from '@/lib/format'
 import { LiveOrders } from '@/components/admin/LiveOrders'
+import { gazaIso, isDay } from '@/lib/gaza'
 
 export const metadata: Metadata = { title: 'الطلبات', robots: { index: false } }
 export const dynamic = 'force-dynamic'
@@ -19,8 +20,8 @@ export default async function Orders(props: PageProps<'/admin/orders'>) {
   if (v('status')) q = q.eq('status', v('status') as 'new')
   if (v('branch')) q = q.eq('branch_id', v('branch'))
   if (v('pay')) q = q.eq('payment_method', v('pay'))
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v('from'))) q = q.gte('created_at', `${v('from')}T00:00:00+03:00`)
-  if (/^\d{4}-\d{2}-\d{2}$/.test(v('to'))) q = q.lt('created_at', `${v('to')}T23:59:59+02:00`)
+  if (isDay(v('from'))) q = q.gte('created_at', gazaIso(v('from')))
+  if (isDay(v('to'))) q = q.lte('created_at', gazaIso(v('to'), true))
   if (clean(v('q'))) { const t = clean(v('q')); q = q.or(`number.ilike.%${t}%,customer_name.ilike.%${t}%,phone.ilike.%${t}%`) }
   const { data: rows, count } = await q
   const pages = Math.max(1, Math.ceil((count ?? 0) / PAGE))
