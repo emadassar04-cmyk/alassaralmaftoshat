@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { Suspense } from 'react'
 import { getProducts } from '@/lib/data'
 import { CustomForm } from '@/components/store/CustomForm'
 
@@ -12,7 +11,7 @@ export default async function Custom() {
       <p className="eyebrow text-center">MADE TO MEASURE</p>
       <h1 className="font-display copper-text mt-2 text-center text-4xl md:text-6xl">اطلب تفصيل على مقاسك</h1>
       <p className="mx-auto mb-10 mt-3 max-w-xl text-center text-muted">اختر النوع وأدخل القياسات. حقول القياس تتغير حسب ما تختار.</p>
-      <Suspense><CustomForm products={products} /></Suspense>
+      <CustomForm products={products} />
     </div>
   )
 }

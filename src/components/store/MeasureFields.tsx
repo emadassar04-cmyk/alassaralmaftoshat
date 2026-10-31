@@ -32,7 +32,7 @@ export function MeasureFields({ schema, value, onChange }: { schema: Measurement
             ) : (
               <input required className="field mt-1" inputMode={f.type === 'number' ? 'decimal' : 'text'} dir={f.type === 'number' ? 'ltr' : undefined} value={value[f.label] ?? ''} onChange={(e) => set(f, e.target.value)} />
             )}
-            {f.hint && <span className="mt-1 block text-xs text-muted/70">{f.hint}</span>}
+            {f.hint && <span className="mt-1 block text-xs text-muted">{f.hint}</span>}
           </label>
         ))}
       </div>

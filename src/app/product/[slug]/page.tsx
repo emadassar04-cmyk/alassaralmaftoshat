@@ -32,7 +32,7 @@ export default async function ProductPage(props: PageProps<'/product/[slug]'>) {
         <div className="space-y-3">
           {images.map((im, i) => (
             <div key={im.url} className="relative aspect-square overflow-hidden border border-copper/15 bg-night-2">
-              <Image src={im.url} alt={im.alt ?? p.name} fill priority={i === 0} sizes="(max-width:768px) 100vw, 50vw" className="object-cover" /></div>))}
+              <Image src={im.url} alt={im.alt ?? p.name} fill preload={i === 0} fetchPriority={i === 0 ? 'high' : 'auto'} sizes="(max-width:768px) 100vw, 50vw" className="object-cover" /></div>))}
         </div>
         <div className="md:sticky md:top-24 md:self-start">
           {p.categories && <p className="eyebrow">{p.categories.name}</p>}

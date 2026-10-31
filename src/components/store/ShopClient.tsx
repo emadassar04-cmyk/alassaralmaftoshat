@@ -1,16 +1,18 @@
 'use client'
-import { useMemo, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useEffect, useMemo, useState } from 'react'
 import type { Category, Product } from '@/lib/types'
 import { ProductCard } from './ProductCard'
 import { unitPrice } from '@/lib/format'
 
 export function ShopClient({ products, categories }: { products: Product[]; categories: Category[] }) {
-  const sp = useSearchParams()
-  const [cat, setCat] = useState(sp.get('cat') ?? 'all')
+  const [cat, setCat] = useState('all')
   const [color, setColor] = useState('all')
   const [maxPrice, setMaxPrice] = useState(0)
-  const [offers, setOffers] = useState(sp.get('offers') === '1')
+  const [offers, setOffers] = useState(false)
+  // URL filters (?cat=…&offers=1) are read after hydration so the page stays fully static (no Suspense bailout / layout shift)
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => { const q = new URLSearchParams(location.search); if (q.get('cat')) setCat(q.get('cat')!); if (q.get('offers') === '1') setOffers(true) }, [])
+  /* eslint-enable react-hooks/set-state-in-effect */
   const [sort, setSort] = useState('default')
   const price = (p: Product) => Math.min(...(p.product_variants.length ? p.product_variants.map((v) => unitPrice(p, v)) : [unitPrice(p)]))
   const top = Math.ceil(Math.max(100, ...products.map(price)) / 50) * 50
@@ -38,7 +40,7 @@ export function ShopClient({ products, categories }: { products: Product[]; cate
         <label className="flex items-end gap-2 pb-3 text-sm"><input type="checkbox" checked={offers} onChange={(e) => setOffers(e.target.checked)} className="h-5 w-5 accent-[#c8a36a]" />العروض فقط</label>
       </div>
       <p className="mt-6 text-sm text-muted">{list.length} منتج</p>
-      <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">{list.map((p, i) => <ProductCard key={p.id} p={p} priority={i < 4} />)}</div>
+      <div className="mt-4 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-3 lg:grid-cols-4 lg:gap-x-5">{list.map((p, i) => <ProductCard key={p.id} p={p} priority={i < 4} level={2} />)}</div>
       {list.length === 0 && <p className="py-20 text-center text-muted">لا توجد منتجات بهذه المواصفات.</p>}
     </div>
   )
