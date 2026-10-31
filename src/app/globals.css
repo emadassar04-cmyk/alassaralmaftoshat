@@ -55,3 +55,25 @@ body::before {
 .reveal { opacity: 0; transform: translateY(24px); transition: opacity .8s cubic-bezier(.22, 1, .36, 1), transform .8s cubic-bezier(.22, 1, .36, 1); }
 .reveal.in { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+/* ---------- Admin (light theme: cream & copper) ---------- */
+.admin { --a-bg: #f6f0e4; --a-card: #fffdf8; --a-line: #e6d9c0; --a-ink: #2a221a; --a-mute: #6f6455; --a-copper: #8f6a2e; background: var(--a-bg); color: var(--a-ink); min-height: 100svh; color-scheme: light; }
+.admin .a-card { background: var(--a-card); border: 1px solid var(--a-line); border-radius: 10px; padding: 1.1rem; }
+.admin .a-h1 { font-family: var(--font-display); font-size: 1.9rem; color: var(--a-copper); line-height: 1.2; }
+.admin .a-muted { color: var(--a-mute); font-size: .85rem; }
+.admin .a-btn { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; min-height: 40px; padding: .4rem 1rem; border-radius: 8px; border: 1px solid var(--a-copper); color: var(--a-copper); background: transparent; cursor: pointer; font-size: .9rem; transition: background .2s, color .2s; }
+.admin .a-btn:hover { background: rgba(143, 106, 46, .1); }
+.admin .a-btn-solid { background: var(--a-copper); color: #fffdf8; }
+.admin .a-btn-solid:hover { background: #7a5a26; }
+.admin .a-btn-danger { border-color: #b4443a; color: #b4443a; }
+.admin .a-btn:disabled { opacity: .5; cursor: not-allowed; }
+.admin .a-field { width: 100%; min-height: 40px; padding: .45rem .7rem; border: 1px solid var(--a-line); border-radius: 8px; background: #fff; color: var(--a-ink); outline: none; }
+.admin .a-field:focus { border-color: var(--a-copper); box-shadow: 0 0 0 3px rgba(143, 106, 46, .15); }
+.admin label.a-lbl { display: block; font-size: .8rem; color: var(--a-mute); }
+.admin table.a-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.admin .a-table th { text-align: start; font-weight: 600; color: var(--a-mute); padding: .6rem .7rem; border-bottom: 1px solid var(--a-line); white-space: nowrap; }
+.admin .a-table td { padding: .65rem .7rem; border-bottom: 1px solid #f0e6d2; vertical-align: top; }
+.admin .a-table tr:hover td { background: #faf4e8; }
+.admin .a-pill { display: inline-block; padding: .1rem .55rem; border-radius: 999px; font-size: .75rem; font-weight: 600; }
+.admin .a-scroll { overflow-x: auto; }
+@media print { body::before { display: none; } .admin { background: #fff; } .no-print { display: none !important; } }
