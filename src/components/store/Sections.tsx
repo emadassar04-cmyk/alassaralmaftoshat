@@ -9,7 +9,7 @@ import { waLink } from '@/lib/format'
 export function Hero({ headline, tagline, badge }: { headline: string; tagline: string; badge: string }) {
   return (
     <section className="relative flex min-h-[88svh] items-end overflow-hidden">
-      <Image src="/img/h/hero.webp" alt="" fill priority sizes="100vw" className="kenburns object-cover" />
+      <Image src="/img/h/hero.webp" alt="" fill preload fetchPriority="high" sizes="100vw" className="kenburns object-cover" />
       <div className="absolute inset-0 bg-gradient-to-t from-night via-night/55 to-night/25" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_40%,rgba(200,163,106,.22),transparent_60%)]" />
       <div className="container-x relative z-10 pb-16 pt-32 text-center">
@@ -103,15 +103,15 @@ export function Story() {
       <SectionTitle eyebrow="OUR STORY" title="قصتنا" sub="ثلاثة عقود من الثقة" />
       <ol className="relative mx-auto max-w-2xl border-s border-copper/30 ps-8">
         {STORY.map(([y, t, d], i) => (
-          <Reveal key={y} delay={i * 0.08}>
-            <li className="relative pb-10 last:pb-0">
+          <li key={y} className="relative pb-10 last:pb-0">
+            <Reveal delay={i * 0.08}>
               <span className="absolute -start-[2.6rem] top-1.5 h-3 w-3 rounded-full bg-copper shadow-[0_0_14px_#c8a36a]" />
               <p className="font-display text-3xl text-copper-lt">{y}</p><h3 className="text-lg text-cream">{t}</h3><p className="text-sm text-muted">{d}</p>
-            </li>
-          </Reveal>
+            </Reveal>
+          </li>
         ))}
       </ol>
-      <p className="mt-8 text-center text-xs text-muted/70">الأحداث الزمنية للتوضيح ويتم تعديلها لاحقاً من إدارة الموقع.</p>
+      <p className="mt-8 text-center text-xs text-muted">الأحداث الزمنية للتوضيح ويتم تعديلها لاحقاً من إدارة الموقع.</p>
     </section>
   )
 }

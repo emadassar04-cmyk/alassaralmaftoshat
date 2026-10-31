@@ -1,14 +1,17 @@
 'use client'
-import { useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { Product } from '@/lib/types'
 import { MeasureFields } from './MeasureFields'
 import { useCart } from '@/lib/cart'
 import { fmt, unitPrice } from '@/lib/format'
 
 export function CustomForm({ products }: { products: Product[] }) {
-  const router = useRouter(); const sp = useSearchParams(); const { add, setOpen } = useCart()
-  const [slug, setSlug] = useState(sp.get('p') ?? products[0]?.slug ?? '')
+  const router = useRouter(); const { add, setOpen } = useCart()
+  const [slug, setSlug] = useState(products[0]?.slug ?? '')
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => { const q = new URLSearchParams(location.search).get('p'); if (q && products.some((x) => x.slug === q)) setSlug(q) }, [products])
+  /* eslint-enable react-hooks/set-state-in-effect */
   const p = products.find((x) => x.slug === slug)
   const [vid, setVid] = useState<string | null>(null)
   const [m, setM] = useState<Record<string, string>>({}); const [notes, setNotes] = useState(''); const [qty, setQty] = useState(1)

@@ -13,7 +13,7 @@ export function Footer({ branches }: { branches: Branch[] }) {
         <div><h3 className="font-display text-xl text-copper-lt">فروعنا</h3>
           <ul className="mt-3 space-y-2 text-sm text-muted">{branches.map((b) => <li key={b.id}><Link href="/branches" className="hover:text-copper-lt">{b.name}</Link>{b.whatsapp && <> · <a href={waLink(b.whatsapp)} className="text-copper" dir="ltr">{b.phone}</a></>}</li>)}</ul></div>
       </div>
-      <p className="container-x mt-10 text-xs text-muted/70">© 1996 – {new Date().getFullYear()} مفروشات العصار · دير البلح والنصيرات</p>
+      <p className="container-x mt-10 text-xs text-muted">© 1996 – {new Date().getFullYear()} مفروشات العصار · دير البلح والنصيرات</p>
     </footer>
   )
 }
