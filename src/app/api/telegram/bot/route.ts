@@ -6,7 +6,7 @@ import { botReply } from '@/lib/bot'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
-type Cfg = { config: { enabled?: boolean }; secrets: { token?: string; anthropic_key?: string; webhook_hash?: string } }
+type Cfg = { config: { enabled?: boolean; provider?: 'gemini' | 'claude' }; secrets: { token?: string; anthropic_key?: string; gemini_key?: string; webhook_hash?: string } }
 type Update = { update_id: number; message?: { chat: { id: number; type: string }; from?: { first_name?: string; last_name?: string; username?: string }; text?: string } }
 
 const WELCOME = 'أهلاً وسهلاً فيك بمفروشات العصار 👋\nأنا المساعد التلقائي، بقدر أساعدك بالأسعار والمنتجات والتفصيل وحالة طلبك.\nشو بتحب تعرف؟'
@@ -30,10 +30,11 @@ export async function POST(req: Request) {
       let text: string
       if (msg.text.trim() === '/start') text = WELCOME
       else {
-        const key = decrypt(cfg.secrets.anthropic_key)
+        const provider = cfg.config.provider === 'claude' ? 'claude' : 'gemini'
+        const key = decrypt(provider === 'claude' ? cfg.secrets.anthropic_key : cfg.secrets.gemini_key)
         if (!key) return
         const { data: hist } = await serverRpc<{ role: string; body: string }[]>('bot_history', { p_conversation: st.conversation_id, p_limit: 20 })
-        text = (await botReply(key, st.conversation_id, hist ?? [])).text
+        text = (await botReply(provider, key, st.conversation_id, hist ?? [])).text
       }
       if (!text) return
       const r = await sendTelegram(token, chat, text.slice(0, 4000), null)
