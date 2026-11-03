@@ -7,7 +7,7 @@ import { Turnstile } from './Turnstile'
 export function LeadPopup() {
   const [open, setOpen] = useState(false)
   const [phone, setPhone] = useState(''); const [hp, setHp] = useState(''); const [token, setToken] = useState('')
-  const [code, setCode] = useState<string | null>(null); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false)
+  const [code, setCode] = useState<string | null>(null); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [tsReset, setTsReset] = useState(0)
   const onToken = useCallback((t: string) => setToken(t), [])
 
   useEffect(() => {
@@ -24,7 +24,7 @@ export function LeadPopup() {
     const r = await fetch('/api/lead', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone, hp, token }) })
     const j = await r.json().catch(() => ({}))
     setBusy(false)
-    if (!r.ok) return setErr(j.error ?? 'تعذّر الحفظ، حاول مرة أخرى')
+    if (!r.ok) { setTsReset((n) => n + 1); return setErr(j.error ?? 'تعذّر الحفظ، حاول مرة أخرى') }
     setCode(j.code); track('Lead')
   }
   if (!open) return null
@@ -42,9 +42,9 @@ export function LeadPopup() {
           <form onSubmit={submit} className="mt-5 space-y-3">
             <input className="field text-center" dir="ltr" inputMode="tel" placeholder="059xxxxxxx" value={phone} onChange={(e) => setPhone(e.target.value)} required aria-label="رقم الجوال" />
             <input className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" value={hp} onChange={(e) => setHp(e.target.value)} name="website" />
-            <Turnstile onToken={onToken} />
+            <Turnstile onToken={onToken} resetKey={tsReset} />
             {err && <p className="text-sm text-danger" role="alert">{err}</p>}
-            <button className="btn btn-solid w-full" disabled={busy}>{busy ? '...' : 'احصل على الكود'}</button>
+            <button className="btn btn-solid w-full" disabled={busy || (Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) && !token)}>{busy ? '...' : 'احصل على الكود'}</button>
           </form>
         </>)}
       </div>

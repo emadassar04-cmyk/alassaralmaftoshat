@@ -8,12 +8,13 @@ import type { Branch, PaymentMethod } from '@/lib/types'
 import { Turnstile } from './Turnstile'
 import { track } from '@/lib/pixel'
 
+const TS_ON = Boolean(process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY)
 type Accounts = Record<string, { account: string; holder?: string }>
 export function CheckoutForm({ branches, accounts }: { branches: Branch[]; accounts: Accounts }) {
   const { lines, subtotal, clear } = useCart(); const router = useRouter()
   const [f, setF] = useState({ name: '', phone: '', branch_id: branches[0]?.id ?? '', fulfillment: 'pickup', address: '', payment_method: 'in_store' as PaymentMethod, coupon: '', notes: '', hp: '' })
   const [disc, setDisc] = useState(0); const [cMsg, setCMsg] = useState(''); const [token, setToken] = useState('')
-  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState(''); const [busy, setBusy] = useState(false); const [tsReset, setTsReset] = useState(0)
   const onToken = useCallback((t: string) => setToken(t), [])
   const set = (k: string, v: string) => setF((s) => ({ ...s, [k]: v }))
   const methods: PaymentMethod[] = f.fulfillment === 'pickup' ? ['in_store', 'palpay', 'jawwal_pay', 'bank_palestine'] : ['cod', 'palpay', 'jawwal_pay', 'bank_palestine']
@@ -30,7 +31,7 @@ export function CheckoutForm({ branches, accounts }: { branches: Branch[]; accou
       items: lines.map((l) => ({ product_id: l.product_id, variant_id: l.variant_id, qty: l.qty, measurements: l.measurements ?? null })) }
     const r = await fetch('/api/order', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
     const j = await r.json().catch(() => ({})); setBusy(false)
-    if (!r.ok) return setErr(j.error ?? 'تعذّر إرسال الطلب')
+    if (!r.ok) { setTsReset((n) => n + 1); return setErr(j.error ?? 'تعذّر إرسال الطلب') }
     track('Purchase', { value: subtotal - disc, currency: 'ILS' })
     clear(); if (j.whatsapp) window.open(j.whatsapp, '_blank', 'noopener')
     router.push(`/thank-you/${j.token}`)
@@ -62,9 +63,9 @@ export function CheckoutForm({ branches, accounts }: { branches: Branch[]; accou
         {disc > 0 && <p className="flex justify-between text-sm"><span>الخصم</span><span>-{fmt(disc)}</span></p>}
         <p className="flex justify-between border-t border-copper/15 pt-3 text-xl"><span>{f.fulfillment === 'delivery' ? 'الإجمالي (بدون التوصيل)' : 'الإجمالي'}</span><strong className="text-copper-lt">{fmt(subtotal - disc)}</strong></p>
         {lines.some((l) => l.is_custom) && <p className="text-xs text-muted">السعر النهائي للمنتجات المفصّلة يُحدَّد بعد مراجعة القياسات.</p>}
-        <Turnstile onToken={onToken} />
+        <Turnstile onToken={onToken} resetKey={tsReset} />
         {err && <p className="text-sm text-danger" role="alert">{err}</p>}
-        <button className="btn btn-solid w-full" disabled={busy}>{busy ? 'جارٍ الإرسال...' : 'تأكيد وإرسال عبر واتساب'}</button>
+        <button className="btn btn-solid w-full" disabled={busy || (TS_ON && !token)}>{busy ? 'جارٍ الإرسال...' : TS_ON && !token ? 'لحظة، جارٍ التحقق...' : 'تأكيد وإرسال عبر واتساب'}</button>
       </aside>
     </form>
   )
