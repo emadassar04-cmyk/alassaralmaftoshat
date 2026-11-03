@@ -6,7 +6,7 @@ import type { Role } from '@/lib/admin-consts'
 const ITEMS: [string, string, boolean][] = [
   ['/admin', 'الرئيسية', false], ['/admin/orders', 'الطلبات', false], ['/admin/products', 'المنتجات', false], ['/admin/coupons', 'العروض والكوبونات', false],
   ['/admin/reviews', 'التقييمات', false], ['/admin/blog', 'المدونة', false], ['/admin/customers', 'الزبائن', true], ['/admin/leads', 'الأرقام (Leads)', true],
-  ['/admin/reports', 'التقارير', true], ['/admin/users', 'المستخدمون', true], ['/admin/settings', 'إعدادات المحل', true], ['/admin/audit', 'السجل', true],
+  ['/admin/reports', 'التقارير', true], ['/admin/users', 'المستخدمون', true], ['/admin/settings', 'إعدادات المحل', true], ['/admin/audit', 'السجل', true], ['/admin/account', 'حسابي', false],
 ]
 export function Nav({ role }: { role: Role }) {
   const path = usePathname()
