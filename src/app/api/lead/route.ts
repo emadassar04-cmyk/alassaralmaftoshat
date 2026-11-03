@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { z } from 'zod'
 import { clientIp, friendly, verifyTurnstile } from '@/lib/guard'
 import { serverRpc } from '@/lib/supabase'
+import { dispatchPending } from '@/lib/webhooks'
 
 const S = z.object({ phone: z.string().min(7).max(20), hp: z.string().optional(), token: z.string().optional() })
 export async function POST(req: Request) {
@@ -12,5 +13,6 @@ export async function POST(req: Request) {
   if (!(await verifyTurnstile(p.data.token, ip))) return NextResponse.json({ error: 'تعذّر التحقق، أعد المحاولة' }, { status: 400 })
   const { data, error } = await serverRpc<{ code: string }>('create_lead', { p_ip: ip, p_phone: p.data.phone, p_source: 'popup' })
   if (error || !data) return NextResponse.json({ error: friendly(error?.message ?? '') }, { status: 400 })
+  after(() => dispatchPending())
   return NextResponse.json({ code: data.code })
 }

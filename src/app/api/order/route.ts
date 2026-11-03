@@ -1,9 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import { z } from 'zod'
 import { clientIp, friendly, verifyTurnstile } from '@/lib/guard'
 import { sb, serverRpc } from '@/lib/supabase'
 import { SITE, orderMessage, waLink } from '@/lib/format'
 import type { TrackedOrder } from '@/lib/types'
+import { dispatchPending } from '@/lib/webhooks'
 
 const S = z.object({
   name: z.string().min(2).max(80), phone: z.string().min(7).max(20), branch_id: z.string().uuid(),
@@ -25,6 +26,7 @@ export async function POST(req: Request) {
   const payload = { ...p.data, hp: undefined, token: undefined }
   const { data, error } = await serverRpc<{ number: string; token: string }>('create_order', { p_ip: ip, p_payload: payload })
   if (error || !data) return NextResponse.json({ error: friendly(error?.message ?? '') }, { status: 400 })
+  after(() => dispatchPending())
   const { data: o } = await sb().rpc('get_order_by_token', { p_token: data.token })
   const order = o as TrackedOrder | null
   const track = `${SITE}/track/${data.token}`

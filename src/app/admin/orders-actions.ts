@@ -1,7 +1,9 @@
 'use server'
 import { revalidatePath } from 'next/cache'
+import { after } from 'next/server'
 import { z } from 'zod'
 import { requireStaff } from '@/lib/admin'
+import { dispatchPending } from '@/lib/webhooks'
 
 type R = { ok?: boolean; error?: string }
 const STATUSES = ['new', 'confirmed', 'ready', 'received', 'cancelled'] as const
@@ -12,6 +14,7 @@ export async function setOrderStatus(_: R | undefined, fd: FormData): Promise<R>
   if (!p.success) return { error: 'بيانات غير صحيحة' }
   const { error } = await sb.from('orders').update({ status: p.data.status }).eq('id', p.data.id)
   if (error) return { error: error.message.includes('stock') || error.code === '23514' ? 'المخزون لا يكفي لتأكيد هذا الطلب' : 'تعذّر تحديث الحالة' }
+  after(() => dispatchPending())
   revalidatePath('/admin', 'layout'); return { ok: true }
 }
 
