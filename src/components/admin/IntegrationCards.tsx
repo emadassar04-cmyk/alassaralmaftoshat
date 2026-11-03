@@ -73,13 +73,14 @@ export function WhatsAppCard({ badge, last, phoneId, tokenMasked }: { badge: Bad
     </Card>
   )
 }
-export function TelegramCard({ badge, last, chatId, tokenMasked }: { badge: Badge; last: string | null; chatId: string; tokenMasked: string }) {
+export function TelegramCard({ badge, last, chatId, tokenMasked, notify }: { badge: Badge; last: string | null; chatId: string; tokenMasked: string; notify: boolean }) {
   const [s, action, pending] = useActionState<R | undefined, FormData>(saveTelegram, undefined)
   return (
     <Card title="تليجرام" badge={badge} last={last}>
       <form action={action} className="grid gap-3 sm:grid-cols-2">
         <label className="a-lbl">Bot Token {tokenMasked && <span dir="ltr">({tokenMasked})</span>}<input name="token" type="password" autoComplete="off" placeholder={tokenMasked ? 'اتركه فارغاً للإبقاء على الحالي' : '123456:ABC…'} dir="ltr" className="a-field mt-1" /></label>
         <label className="a-lbl">Chat ID للإشعارات<input name="chat_id" defaultValue={chatId} dir="ltr" className="a-field mt-1" /></label>
+        <label className="flex items-center gap-2 text-sm sm:col-span-2"><input type="checkbox" name="notify" defaultChecked={notify} className="h-5 w-5" />إرسال إشعارات المحل مباشرة من الموقع (طلب جديد، تغيّر الحالة، رقم جديد، تقييم، مخزون منخفض). لا يحتاج n8n.</label>
         <div className="flex flex-wrap items-center gap-3 sm:col-span-2"><button className="a-btn a-btn-solid" disabled={pending}>حفظ</button><Msg s={s} /></div>
       </form>
       <Test label="إرسال رسالة تجريبية" run={testTelegram} />

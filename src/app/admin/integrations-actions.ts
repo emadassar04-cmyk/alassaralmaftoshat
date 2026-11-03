@@ -82,10 +82,11 @@ export async function testWhatsApp(_: R | undefined, fd: FormData): Promise<R> {
 
 // ---------- Telegram ----------
 export async function saveTelegram(_: R | undefined, fd: FormData): Promise<R> {
-  const { sb } = await requireOwner(); const chat = String(fd.get('chat_id') ?? '').trim(); const tok = String(fd.get('token') ?? '').trim()
+  const { sb } = await requireOwner(); const chat = String(fd.get('chat_id') ?? '').trim(); const tok = String(fd.get('token') ?? '').trim(); const notify = fd.get('notify') === 'on'
   if (chat && !/^-?\d{5,20}$/.test(chat)) return { error: 'Chat ID أرقام (قد يبدأ بـ -)' }
   if (tok && !/^\d+:[\w-]{20,}$/.test(tok)) return { error: 'صيغة Bot Token غير صحيحة' }
-  const { error } = await save(sb, 'telegram', { config: { chat_id: chat }, secrets: tok ? { token: encrypt(tok) } : {} }); if (error) return { error: 'تعذّر الحفظ' }
+  if (notify && !chat) return { error: 'ضع Chat ID قبل تفعيل الإشعارات' }
+  const { error } = await save(sb, 'telegram', { config: { chat_id: chat, notify }, secrets: tok ? { token: encrypt(tok) } : {} }); if (error) return { error: 'تعذّر الحفظ' }
   done(); return { ok: true, message: 'تم الحفظ' }
 }
 export async function testTelegram(): Promise<R> {
