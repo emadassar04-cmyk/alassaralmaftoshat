@@ -18,14 +18,15 @@ type Hook = { url?: string; pending_update_count?: number; last_error_message?: 
 export default async function BotPage() {
   const { sb } = await requireOwner()
   const { data: row } = await sb.from('integration_settings').select('config, secrets').eq('key', 'bot').maybeSingle()
-  const config = (row?.config ?? {}) as { enabled?: boolean; username?: string | null; connected?: boolean; provider?: 'gemini' | 'claude' }
+  const config = (row?.config ?? {}) as { enabled?: boolean; username?: string | null; connected?: boolean; provider?: 'gemini' | 'claude'; mode?: 'site' | 'n8n' }
+  const mode = config.mode === 'site' ? 'site' : 'n8n'
   const provider = config.provider === 'claude' ? 'claude' : 'gemini'
   const secrets = (row?.secrets ?? {}) as Record<string, string>
   const token = decrypt(secrets.token); const claudeKey = decrypt(secrets.anthropic_key); const geminiKey = decrypt(secrets.gemini_key); const key = provider === 'claude' ? claudeKey : geminiKey
   let hook: Hook | null = null
   if (token) { try { const r = await fetch(`https://api.telegram.org/bot${token}/getWebhookInfo`, { cache: 'no-store', signal: AbortSignal.timeout(6000) }); hook = ((await r.json()) as { result?: Hook }).result ?? null } catch { hook = null } }
-  const hookOk = !!hook?.url && hook.url === `${SITE}/api/telegram/bot`
-  const ready = !!token && !!key && hookOk
+  const hookOk = mode === 'site' ? !!hook?.url && hook.url === `${SITE}/api/telegram/bot` : !!hook?.url && !hook.url.startsWith(SITE)
+  const ready = mode === 'site' ? !!token && !!key && hookOk : !!token && hookOk
   const tgConv = () => sb.from('bot_conversations').select('id', { count: 'exact', head: true }).eq('channel', 'telegram')
   const [all, week, waiting, human, msgsToday, aiToday, humanToday, { data: list }] = await Promise.all([
     tgConv(), tgConv().gte('last_message_at', since(7)), tgConv().eq('needs_human', true), tgConv().eq('handled_by', 'human'),
@@ -43,7 +44,7 @@ export default async function BotPage() {
       <section className="a-card flex flex-wrap items-center justify-between gap-4">
         <div><h2 className="font-semibold">الحالة</h2>
           <p className="mt-1 text-sm">{config.enabled && ready ? <span className="a-pill bg-emerald-100 text-emerald-800">يعمل ويرد تلقائياً</span> : config.enabled ? <span className="a-pill bg-amber-100 text-amber-800">مُفعّل لكن الإعداد ناقص</span> : <span className="a-pill bg-stone-200 text-stone-700">متوقف (يحفظ الرسائل فقط)</span>}</p>
-          <ul className="a-muted mt-2 space-y-0.5"><li>{token ? '✅' : '⬜'} توكن البوت</li><li>{key ? '✅' : '⬜'} مفتاح {provider === 'claude' ? 'Claude' : 'Gemini'} (الذكاء المستعمل: {provider === 'claude' ? 'Claude' : 'Gemini'})</li><li>{hookOk ? '✅' : '⬜'} مربوط بتليجرام{hook?.last_error_message && <span className="text-rose-700"> · آخر خطأ: {hook.last_error_message}</span>}</li></ul></div>
+          <ul className="a-muted mt-2 space-y-0.5"><li>{token ? '✅' : '⬜'} توكن البوت</li><li>طريقة التشغيل: <b>{mode === 'n8n' ? 'عبر n8n' : 'داخل الموقع'}</b></li>{mode === 'site' && <li>{key ? '✅' : '⬜'} مفتاح {provider === 'claude' ? 'Claude' : 'Gemini'}</li>}<li>{hookOk ? '✅' : '⬜'} {mode === 'n8n' ? 'تليجرام مربوط بـ n8n (Telegram Trigger مفعّل)' : 'مربوط بتليجرام'}{hook?.url && mode === 'n8n' && <span dir="ltr" className="ms-1 text-xs">({new URL(hook.url).host})</span>}{hook?.last_error_message && <span className="text-rose-700"> · آخر خطأ: {hook.last_error_message}</span>}</li></ul></div>
         <form action={setBotEnabled}><input type="hidden" name="enabled" value={config.enabled ? '0' : '1'} /><button className={`a-btn ${config.enabled ? 'a-btn-danger' : 'a-btn-solid'}`}>{config.enabled ? 'إيقاف البوت' : 'تشغيل البوت'}</button></form>
       </section>
 
@@ -63,8 +64,9 @@ export default async function BotPage() {
       <section className="a-card space-y-3"><h2 className="font-semibold">الإعداد</h2>
         <ol className="a-muted list-decimal space-y-1 ps-5"><li>أنشئ بوتاً جديداً للزبائن من @BotFather بالأمر <span dir="ltr">/newbot</span> وانسخ التوكن (لا تستعمل بوت الإشعارات).</li>
           <li>أنشئ مفتاح Gemini مجاناً من <span dir="ltr">aistudio.google.com</span> ← Get API key (أو مفتاح Claude من <span dir="ltr">console.anthropic.com</span> إن اخترت Claude).</li><li>الصقهما هنا واحفظ، ثم اضغط «ربط البوت بتليجرام»، ثم «تشغيل البوت».</li></ol>
-        <BotKeysForm tokenMasked={maskSecret(token)} keyMasked={maskSecret(claudeKey)} geminiMasked={maskSecret(geminiKey)} provider={provider} />
-        {token && <ConnectButton />}</section>
+        <BotKeysForm tokenMasked={maskSecret(token)} keyMasked={maskSecret(claudeKey)} geminiMasked={maskSecret(geminiKey)} provider={provider} mode={mode} />
+        {token && mode === 'site' && <ConnectButton />}
+        {mode === 'n8n' && <p className="rounded-md bg-amber-50 p-3 text-sm text-amber-900">في وضع n8n: لا تضغط «ربط البوت» هنا. الربط يتم تلقائياً عند تفعيل workflow البوت في n8n (عقدة Telegram Trigger). التوكن هنا مطلوب فقط لإرسال ردودك اليدوية من الداشبورد. توثيق نقاط الـ HTTP في صفحة الربط ← توثيق API.</p>}</section>
     </>
   )
 }
