@@ -116,12 +116,12 @@ export function Story() {
   )
 }
 
-export function Testimonials({ items }: { items: { name: string; text: string; place?: string }[] }) {
+export function Testimonials({ items, title = 'آراء زبائننا' }: { items: { name: string; text: string; place?: string }[]; title?: string }) {
   if (!items.length) return null
   return (
     <section className="section bg-night-2">
       <div className="container-x">
-        <SectionTitle eyebrow="TESTIMONIALS" title="آراء زبائننا" />
+        <SectionTitle eyebrow="TESTIMONIALS" title={title} />
         <div className="grid gap-4 md:grid-cols-3">
           {items.map((t, i) => (
             <Reveal key={i} delay={i * 0.08}>

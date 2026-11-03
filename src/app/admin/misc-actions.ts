@@ -75,7 +75,7 @@ export async function saveBranch(raw: unknown): Promise<R> {
   revalidatePath('/', 'layout'); revalidatePath('/admin/settings'); return { ok: true }
 }
 const Settings = {
-  home: z.object({ headline: z.string().min(2).max(60), tagline: z.string().min(2).max(80), badge: z.string().max(120) }),
+  home: z.object({ headline: z.string().min(2).max(60), tagline: z.string().min(2).max(80), badge: z.string().max(120), testimonials_title: z.string().max(60).optional() }),
   payment_accounts: z.record(z.string(), z.object({ account: z.string().max(80), holder: z.string().max(80).default('') })),
   meta_pixel_id: z.string().regex(/^(\d{5,20})?$/, 'رقم Pixel أرقام فقط'),
   testimonials: z.array(z.object({ name: z.string().min(1).max(60), text: z.string().min(1).max(300), place: z.string().max(60).default('') })).max(12),

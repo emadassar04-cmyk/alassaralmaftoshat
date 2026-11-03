@@ -77,12 +77,13 @@ function SettingShell({ title, k, value, children, hint }: { title: string; k: s
     </form>
   )
 }
-export function HomeSettings({ v }: { v: { headline: string; tagline: string; badge: string } }) {
-  const [f, setF] = useState(v)
+export function HomeSettings({ v }: { v: { headline: string; tagline: string; badge: string; testimonials_title?: string } }) {
+  const [f, setF] = useState({ ...v, testimonials_title: v.testimonials_title ?? '' })
   return <SettingShell title="نصوص الصفحة الرئيسية" k="home" value={() => f}>
     <label className="a-lbl">العنوان الرئيسي<input className="a-field mt-1" value={f.headline} onChange={(e) => setF({ ...f, headline: e.target.value })} /></label>
     <label className="a-lbl">الشعار<input className="a-field mt-1" value={f.tagline} onChange={(e) => setF({ ...f, tagline: e.target.value })} /></label>
-    <label className="a-lbl">الشارة تحت الشعار<input className="a-field mt-1" value={f.badge} onChange={(e) => setF({ ...f, badge: e.target.value })} /></label></SettingShell>
+    <label className="a-lbl">الشارة تحت الشعار<input className="a-field mt-1" value={f.badge} onChange={(e) => setF({ ...f, badge: e.target.value })} /></label>
+    <label className="a-lbl">عنوان قسم الآراء (اتركه فارغاً = «آراء زبائننا»)<input className="a-field mt-1" value={f.testimonials_title} placeholder="آراء زبائننا" onChange={(e) => setF({ ...f, testimonials_title: e.target.value })} /></label></SettingShell>
 }
 export function PaymentSettings({ v }: { v: Record<string, { account: string; holder?: string }> }) {
   const names: Record<string, string> = { palpay: 'PalPay', jawwal_pay: 'جوال باي', bank_palestine: 'بنك فلسطين' }
@@ -97,7 +98,7 @@ export function PixelSettings({ v }: { v: string }) {
 }
 export function TestimonialSettings({ v }: { v: { name: string; text: string; place?: string }[] }) {
   const [f, setF] = useState(v.map((t) => ({ name: t.name, text: t.text, place: t.place ?? '' })))
-  return <SettingShell title="آراء الزبائن في الصفحة الرئيسية" k="testimonials" value={() => f} hint="استبدل النصوص التجريبية بآراء زبائنك الحقيقية (بموافقتهم).">
+  return <SettingShell title="قسم الآراء في الصفحة الرئيسية" k="testimonials" value={() => f} hint="آراء زبائن حقيقية (بموافقتهم)، أو كلمة من المحل باسم «عائلة العصار». عدّل عنوان القسم من «نصوص الصفحة الرئيسية». احذف الكل لإخفاء القسم.">
     {f.map((t, i) => <div key={i} className="grid gap-2 rounded-lg border border-[var(--a-line)] p-3 md:grid-cols-[1fr_1fr_3fr_auto]">
       <input className="a-field" placeholder="الاسم" aria-label="الاسم" value={t.name} onChange={(e) => setF(f.map((x, j) => j === i ? { ...x, name: e.target.value } : x))} />
       <input className="a-field" placeholder="المنطقة" aria-label="المنطقة" value={t.place} onChange={(e) => setF(f.map((x, j) => j === i ? { ...x, place: e.target.value } : x))} />
