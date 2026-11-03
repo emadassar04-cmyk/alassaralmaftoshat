@@ -32,7 +32,8 @@ export default async function Track(props: PageProps<'/track/[token]'>) {
             {o.status === 'received' && i.product_id && <div className="mt-3"><ReviewForm token={token} productId={i.product_id} name={i.name} /></div>}</li>))}</ul>
         <div className="mt-3 space-y-1 border-t border-copper/15 pt-3 text-sm text-muted">
           {o.discount > 0 && <p className="flex justify-between"><span>الخصم</span><span>-{fmt(o.discount)}</span></p>}
-          <p className="flex justify-between text-lg text-cream"><span>الإجمالي</span><strong className="text-copper-lt">{fmt(o.total)}</strong></p>
+          <p className="flex justify-between text-lg text-cream"><span>{o.fulfillment === 'delivery' ? 'الإجمالي (بدون التوصيل)' : 'الإجمالي'}</span><strong className="text-copper-lt">{fmt(o.total)}</strong></p>
+          {o.fulfillment === 'delivery' && <p className="text-xs text-copper-lt">🚚 أجرة التوصيل غير مشمولة، نتفق عليها معك على واتساب حسب منطقتك.</p>}
           <p>الفرع: {o.branch.name} · {o.fulfillment === 'pickup' ? 'استلام من الفرع' : `توصيل: ${o.address}`} · {PAYMENT_LABEL[o.payment_method]}</p></div>
       </section>
       <a className="btn btn-solid mx-auto mt-8 flex max-w-sm" target="_blank" rel="noopener" href={waLink(o.branch.whatsapp, `مرحباً، بخصوص طلبي ${o.number}`)}><MessageCircle size={18} />تواصل معنا على واتساب</a>

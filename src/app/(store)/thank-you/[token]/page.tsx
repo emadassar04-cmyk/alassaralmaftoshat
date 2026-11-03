@@ -18,7 +18,8 @@ export default async function ThankYou(props: PageProps<'/thank-you/[token]'>) {
       <h1 className="font-display copper-text glow-text mt-6 text-5xl md:text-7xl">شكراً لثقتك</h1>
       <p className="mt-4 text-muted">تم حفظ طلبك. رقم الطلب</p>
       <p className="font-display text-5xl text-copper-lt" dir="ltr">{o.number}</p>
-      <p className="mt-2 text-sm text-muted">الإجمالي: {fmt(o.total)} · {o.branch.name}</p>
+      <p className="mt-2 text-sm text-muted">الإجمالي: {fmt(o.total)}{o.fulfillment === 'delivery' && ' (بدون التوصيل)'} · {o.branch.name}</p>
+      {o.fulfillment === 'delivery' && <p className="mx-auto mt-3 max-w-md text-sm text-copper-lt">🚚 أجرة التوصيل غير مشمولة، نتفق عليها معك على واتساب حسب منطقتك.</p>}
       <div className="mx-auto mt-10 flex max-w-sm flex-col gap-3">
         <a className="btn btn-solid" target="_blank" rel="noopener" href={waLink(o.branch.whatsapp, orderMessage(o, url))}><MessageCircle size={18} />أرسل الطلب على واتساب</a>
         <Link className="btn" href={`/track/${token}`}>تتبّع طلبك</Link>

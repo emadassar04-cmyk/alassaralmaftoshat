@@ -21,8 +21,8 @@ export function orderMessage(o: TrackedOrder, trackUrl: string, labels: Record<s
     return `• ${i.name}${i.variant ? ` (${i.variant})` : ''} × ${i.qty} = ${fmt(i.price * i.qty)}${m ? `\n   القياسات: ${m}` : ''}`
   }).join('\n')
   return [`مرحباً مفروشات العصار 👋`, `طلب جديد رقم *${o.number}*`, '', items, '',
-    o.discount > 0 ? `الخصم: -${fmt(o.discount)}` : '', `الإجمالي: *${fmt(o.total)}*`, `الفرع: ${o.branch.name}`,
-    `الاستلام: ${o.fulfillment === 'pickup' ? 'من الفرع' : `توصيل - ${o.address ?? ''}`}`, `الدفع: ${PAYMENT_LABEL[o.payment_method]}`,
+    o.discount > 0 ? `الخصم: -${fmt(o.discount)}` : '', o.fulfillment === 'delivery' ? `الإجمالي: *${fmt(o.total)}* (بدون التوصيل)` : `الإجمالي: *${fmt(o.total)}*`, `الفرع: ${o.branch.name}`,
+    `الاستلام: ${o.fulfillment === 'pickup' ? 'من الفرع' : `توصيل - ${o.address ?? ''}`}`, `الدفع: ${PAYMENT_LABEL[o.payment_method]}`, o.fulfillment === 'delivery' ? 'أجرة التوصيل: نتفق عليها هنا حسب المنطقة، أرجو تأكيدها.' : '',
     o.items.some((i) => i.is_custom) ? 'ملاحظة: السعر النهائي للمنتجات المفصّلة يُحدَّد بعد مراجعة القياسات.' : '',
     '', `تتبع الطلب: ${trackUrl}`].filter((x, i, a) => !(x === '' && a[i - 1] === '')).join('\n')
 }
