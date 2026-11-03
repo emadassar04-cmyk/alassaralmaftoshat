@@ -1,9 +1,12 @@
 import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenAI, type Content, type FunctionDeclaration, type Part } from '@google/genai'
 import { getBranches, getProducts, getSetting } from './data'
 import { PAYMENT_LABEL, SITE, unitPrice } from './format'
 import { serverRpc } from './supabase'
 
 const MODEL = 'claude-opus-5-5'
+const GEMINI_MODEL = 'gemini-flash-latest'
+export type BotProvider = 'gemini' | 'claude'
 const ST: Record<string, string> = { new: 'جديد (قيد المراجعة)', confirmed: 'مؤكد', ready: 'جاهز للاستلام/التوصيل', received: 'تم الاستلام', cancelled: 'ملغي' }
 
 const SYSTEM_RULES = `أنت مساعد مفروشات العصار على تليجرام، محل مفروشات في قطاع غزة منذ 1996 بفرعين: دير البلح والنصيرات.
@@ -68,8 +71,54 @@ async function shopFacts() {
   return `معلومات المحل الحالية:\n${b}\nطرق الدفع: ${pay}\nالمتجر: ${SITE}/shop  التفصيل: ${SITE}/custom`
 }
 
-/** Runs one bot turn. Returns the reply text to send to the customer. */
-export async function botReply(apiKey: string, conversationId: string, history: { role: string; body: string }[]): Promise<{ text: string; handedOff: boolean }> {
+const FALLBACK_TEXT = 'خلّيني أحوّلك لحدا من فريق العصار، رح يرد عليك بأقرب وقت 🙏'
+
+async function geminiReply(apiKey: string, conversationId: string, history: { role: string; body: string }[]) {
+  const ai = new GoogleGenAI({ apiKey })
+  const decls: FunctionDeclaration[] = tools.map((t) => {
+    const schema = { ...(t.input_schema as Record<string, unknown>) }; delete schema.additionalProperties
+    return { name: t.name, description: t.description, parametersJsonSchema: schema }
+  })
+  const contents: Content[] = []
+  for (const m of history) {
+    const role = m.role === 'customer' ? 'user' : 'model'
+    if (!contents.length && role !== 'user') continue
+    contents.push({ role, parts: [{ text: m.body }] })
+  }
+  if (!contents.length) return { text: '', handedOff: false }
+  const systemInstruction = `${SYSTEM_RULES}\n\n${await shopFacts()}`
+  let handedOff = false
+  for (let i = 0; i < 5; i++) {
+    const res = await ai.models.generateContent({ model: GEMINI_MODEL, contents, config: { systemInstruction, tools: [{ functionDeclarations: decls }] } })
+    const calls = res.functionCalls ?? []
+    if (calls.length) {
+      const modelContent = res.candidates?.[0]?.content // keep the model's own parts (incl. thought signatures)
+      contents.push(modelContent ?? { role: 'model', parts: calls.map((c) => ({ functionCall: c })) })
+      const parts: Part[] = []
+      for (const c of calls) {
+        if (c.name === 'handoff_to_human') handedOff = true
+        let out: unknown
+        try { out = JSON.parse(await runTool(c.name ?? '', (c.args ?? {}) as Record<string, string>, conversationId)) } catch { out = { error: 'حدث خطأ مؤقت' } }
+        parts.push({ functionResponse: { id: c.id, name: c.name, response: { result: out } } })
+      }
+      contents.push({ role: 'user', parts })
+      continue
+    }
+    const text = (res.text ?? '').trim()
+    if (text) return { text, handedOff }
+    break
+  }
+  if (!handedOff) { await serverRpc('bot_handoff', { p_conversation: conversationId, p_reason: 'البوت لم يستطع الرد' }); handedOff = true }
+  return { text: FALLBACK_TEXT, handedOff }
+}
+
+/** Runs one bot turn with the chosen provider. Returns the reply text to send to the customer. */
+export async function botReply(provider: BotProvider, apiKey: string, conversationId: string, history: { role: string; body: string }[]): Promise<{ text: string; handedOff: boolean }> {
+  if (provider === 'gemini') return geminiReply(apiKey, conversationId, history)
+  return claudeReply(apiKey, conversationId, history)
+}
+
+async function claudeReply(apiKey: string, conversationId: string, history: { role: string; body: string }[]): Promise<{ text: string; handedOff: boolean }> {
   const client = new Anthropic({ apiKey, timeout: 45_000, maxRetries: 1 })
   const messages: Anthropic.Beta.BetaMessageParam[] = []
   for (const m of history) {
@@ -104,5 +153,5 @@ export async function botReply(apiKey: string, conversationId: string, history: 
     break
   }
   if (!handedOff) { await serverRpc('bot_handoff', { p_conversation: conversationId, p_reason: 'البوت لم يستطع الرد' }); handedOff = true }
-  return { text: 'خلّيني أحوّلك لحدا من فريق العصار، رح يرد عليك بأقرب وقت 🙏', handedOff }
+  return { text: FALLBACK_TEXT, handedOff }
 }
