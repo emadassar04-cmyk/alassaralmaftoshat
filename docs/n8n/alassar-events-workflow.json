@@ -220,9 +220,10 @@
     {
       "parameters": {
         "chatId": "ضع_CHAT_ID_هنا",
-        "text": "=🛋️ طلب جديد *{{ $json.body.data.number }}*\nالزبون: {{ $json.body.data.customer_name }} - {{ $json.body.data.phone }}\nالفرع: {{ $json.body.data.branch }}\nالاستلام: {{ $json.body.data.fulfillment === 'pickup' ? 'من الفرع' : 'توصيل - ' + $json.body.data.address }}\nالدفع: {{ $json.body.data.payment_method }}\nالإجمالي: {{ $json.body.data.total }} ₪\n\n{{ $json.body.data.items.map(i => '• ' + i.name + (i.variant ? ' (' + i.variant + ')' : '') + ' × ' + i.qty + (i.is_custom ? ' [تفصيل]' : '')).join('\\n') }}\n\nالتتبع: https://alassaralmaftoshat.vercel.app/track/{{ $json.body.data.track_token }}",
+        "text": "=🛋️ طلب جديد <b>{{ $json.body.data.number }}</b>\nالزبون: {{ $json.body.data.customer_name }} - {{ $json.body.data.phone }}\nالفرع: {{ $json.body.data.branch }}\nالاستلام: {{ $json.body.data.fulfillment === 'pickup' ? 'من الفرع' : 'توصيل - ' + $json.body.data.address }}\nالدفع: {{ ({in_store:'في المحل',cod:'عند التوصيل',palpay:'PalPay',jawwal_pay:'جوال باي',bank_palestine:'بنك فلسطين'})[$json.body.data.payment_method] }}\nالإجمالي: {{ $json.body.data.total }} ₪\n\n{{ $json.body.data.items.map(i => '• ' + i.name + (i.variant ? ' (' + i.variant + ')' : '') + ' × ' + i.qty + (i.is_custom ? ' [تفصيل]' : '')).join('\\n') }}\n\nالتتبع: https://alassaralmaftoshat.vercel.app/track/{{ $json.body.data.track_token }}",
         "additionalFields": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "parse_mode": "HTML"
         }
       },
       "id": "b47f7ff8-3657-4baa-b5b5-810595c1e0c9",
@@ -239,7 +240,8 @@
         "chatId": "ضع_CHAT_ID_هنا",
         "text": "=📦 الطلب {{ $json.body.data.number }}: {{ $json.body.data.from }} ← {{ $json.body.data.to }}\nالزبون: {{ $json.body.data.customer_name }} - {{ $json.body.data.phone }}",
         "additionalFields": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "parse_mode": "HTML"
         }
       },
       "id": "19c38f1e-40ae-4b75-b47b-ac81cdae919b",
@@ -256,7 +258,8 @@
         "chatId": "ضع_CHAT_ID_هنا",
         "text": "=📱 رقم جديد من الموقع: {{ $json.body.data.phone }}\nكود الخصم: {{ $json.body.data.coupon_code }}",
         "additionalFields": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "parse_mode": "HTML"
         }
       },
       "id": "88dad7a3-4ede-41ec-b09b-cb0c1d899f54",
@@ -273,7 +276,8 @@
         "chatId": "ضع_CHAT_ID_هنا",
         "text": "=⭐ تقييم جديد ينتظر الموافقة\nالمنتج: {{ $json.body.data.product }}\nالتقييم: {{ $json.body.data.rating }}/5 - {{ $json.body.data.author }}\n{{ $json.body.data.body }}",
         "additionalFields": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "parse_mode": "HTML"
         }
       },
       "id": "36de19b2-c101-4da6-ab7c-415740c6188a",
@@ -290,7 +294,8 @@
         "chatId": "ضع_CHAT_ID_هنا",
         "text": "=⚠️ مخزون منخفض: {{ $json.body.data.product }} ({{ $json.body.data.variant }}) - المتبقي {{ $json.body.data.stock }}",
         "additionalFields": {
-          "appendAttribution": false
+          "appendAttribution": false,
+          "parse_mode": "HTML"
         }
       },
       "id": "170545be-2eaf-4b27-9f9c-7411e125cc97",
