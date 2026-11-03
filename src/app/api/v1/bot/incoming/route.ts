@@ -2,14 +2,15 @@ import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { requireApiKey, jerr } from '@/lib/api-auth'
 import { serverRpc } from '@/lib/supabase'
-import { botSettings } from '@/lib/bot-api'
+import { botSettings, relaySigOk } from '@/lib/bot-api'
 
 export const dynamic = 'force-dynamic'
-const S = z.object({ update_id: z.coerce.number().int(), chat_id: z.union([z.string(), z.number()]).transform(String), name: z.string().max(100).optional().nullable(), text: z.string().min(1).max(4000) })
-// n8n -> site: store the customer's message (once per Telegram update) and tell n8n whether the bot should answer.
+const S = z.object({ update_id: z.coerce.number().int(), chat_id: z.union([z.string(), z.number()]).transform(String), name: z.string().max(100).optional().nullable(), text: z.string().min(1).max(4000), sig: z.string().max(128) })
+// n8n -> site: store a customer message relayed by the site's Telegram webhook (signed, once per update) and tell n8n whether to answer.
 export async function POST(req: Request) {
   const d = await requireApiKey(req); if (d) return d
   const p = S.safeParse(await req.json().catch(() => null)); if (!p.success) return jerr(p.error.issues[0]?.message ?? 'بيانات غير صحيحة', 400)
+  if (!relaySigOk(p.data.update_id, p.data.chat_id, p.data.text, p.data.sig)) return jerr('توقيع الرسالة غير صحيح', 401)
   const { data: st } = await serverRpc<{ duplicate: boolean; conversation_id?: string; handled_by?: string }>('bot_ingest', { p_update_id: p.data.update_id, p_chat_id: p.data.chat_id, p_name: p.data.name ?? null, p_text: p.data.text })
   if (!st) return jerr('تعذّر الحفظ', 500)
   if (st.duplicate) return NextResponse.json({ ok: true, duplicate: true, should_reply: false })

@@ -15,6 +15,8 @@ export function decrypt(token?: string | null) {
 }
 export const sha256 = (s: string) => createHash('sha256').update(s).digest('hex')
 export const hmac = (secret: string, body: string) => createHmac('sha256', secret).update(body).digest('hex')
+/** Server-only HMAC (key derived from SERVER_RPC_SECRET) used to prove a payload came from this site, e.g. bot messages relayed through n8n. */
+export const serverSig = (label: string, body: string) => createHmac('sha256', Buffer.from(hkdfSync('sha256', process.env.SERVER_RPC_SECRET ?? '', 'assar-sig', label, 32))).update(body).digest('hex')
 export const randomHex = (bytes: number) => randomBytes(bytes).toString('hex')
 export const maskSecret = (s: string) => (s ? `••••••••${s.slice(-4)}` : '')
 /** Only public https endpoints (no localhost / private networks) may be targeted by outgoing webhooks. */

@@ -2,7 +2,7 @@
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import { requireOwner } from '@/lib/admin'
-import { decrypt, encrypt, randomHex, sha256 } from '@/lib/secure'
+import { decrypt, encrypt, randomHex, safeHttpsUrl, sha256 } from '@/lib/secure'
 import { SITE } from '@/lib/format'
 import { sendTelegram } from '@/lib/webhooks'
 
@@ -26,9 +26,12 @@ export async function saveBotKeys(_: R | undefined, fd: FormData): Promise<R> {
   if (token && !/^\d+:[\w-]{20,}$/.test(token)) return { error: 'صيغة Bot Token غير صحيحة' }
   if (key && !/^sk-ant-[\w-]{20,}$/.test(key)) return { error: 'مفتاح Claude يبدأ بـ sk-ant-' }
   if (gkey && !/^[\w.\-]{20,300}$/.test(gkey)) return { error: 'مفتاح Gemini يبدو غير مكتمل، انسخه من جديد من AI Studio' }
+  const n8nUrl = String(fd.get('n8n_url') ?? '').trim(); const fallback = fd.get('fallback') === 'on'
+  if (n8nUrl && !safeHttpsUrl(n8nUrl)) return { error: 'رابط n8n يجب أن يبدأ بـ https://' }
+  if (mode === 'n8n' && !n8nUrl) return { error: 'ضع رابط Webhook الخاص بـ workflow البوت في n8n' }
   const secrets: Record<string, string> = {}
   if (token) secrets.token = encrypt(token); if (key) secrets.anthropic_key = encrypt(key); if (gkey) secrets.gemini_key = encrypt(gkey)
-  const { error } = await saveRow(sb, { secrets, config: { provider, mode, ...(token ? { username: null, connected: false } : {}) } })
+  const { error } = await saveRow(sb, { secrets, config: { provider, mode, n8n_url: n8nUrl, fallback, ...(token ? { username: null, connected: false } : {}) } })
   if (error) return { error: 'تعذّر الحفظ' }
   done(); return { ok: true, message: token ? 'تم الحفظ. اضغط «ربط البوت بتليجرام» الآن.' : 'تم الحفظ' }
 }
