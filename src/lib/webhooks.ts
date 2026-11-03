@@ -13,10 +13,10 @@ export async function postToN8n(url: string, secret: string, id: string, event: 
     headers: { 'content-type': 'application/json', 'x-assar-event': event, 'x-assar-delivery': id, 'x-assar-secret': secret, 'x-assar-signature': `sha256=${hmac(secret, body)}` },
   })
 }
-export async function sendTelegram(token: string, chatId: string, text: string) {
+export async function sendTelegram(token: string, chatId: string, text: string, parseMode: 'HTML' | null = 'HTML') {
   return fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
     method: 'POST', signal: AbortSignal.timeout(10000), headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML', disable_web_page_preview: true }),
+    body: JSON.stringify({ chat_id: chatId, text, ...(parseMode ? { parse_mode: parseMode } : {}), disable_web_page_preview: true }),
   })
 }
 
