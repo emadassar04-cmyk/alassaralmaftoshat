@@ -15,29 +15,14 @@ const SYSTEM = 'أنت مساعد مفروشات العصار على تليجر�
 'ممنوع: وعود بخصومات أو مواعيد تسليم محددة، أو أي معلومات عن زبائن آخرين، أو الحديث في مواضيع ما إلها علاقة بالمحل (رجّع الحديث للمفروشات بلطف).\n' +
 'اكتب نص عادي بدون تنسيق Markdown (بدون نجوم أو عناوين).';
 
-const telegramIn = trigger({
-  type: 'n8n-nodes-base.telegramTrigger',
-  version: 1.5,
+const siteIn = trigger({
+  type: 'n8n-nodes-base.webhook',
+  version: 2.1,
   config: {
-    name: 'Customer Message',
-    parameters: { updates: ['message'] },
-    credentials: { telegramApi: newCredential('Alassar Customer Bot') }
+    name: 'Message From Site',
+    parameters: { httpMethod: 'POST', path: 'alassar-bot', responseMode: 'onReceived', options: { responseData: '{"ok":true}' } }
   },
-  output: [{ update_id: 1001, message: { message_id: 5, chat: { id: 123456, type: 'private' }, from: { id: 123456, first_name: 'Ahmad' }, text: 'مرحبا، قديش سعر الستائر؟' } }]
-});
-
-const hasText = ifElse({
-  version: 2.2,
-  config: {
-    name: 'Is Text Message?',
-    parameters: {
-      conditions: {
-        options: { caseSensitive: true, leftValue: '', typeValidation: 'loose' },
-        conditions: [{ leftValue: expr('{{ $json.message.text }}'), operator: { type: 'string', operation: 'notEmpty', singleValue: true } }],
-        combinator: 'and'
-      }
-    }
-  }
+  output: [{ headers: {}, body: { update_id: 1001, chat_id: '123456', name: 'Ahmad', text: 'مرحبا، قديش سعر الستائر؟', sig: 'abc' } }]
 });
 
 const saveIncoming = node({
@@ -53,7 +38,7 @@ const saveIncoming = node({
       sendBody: true,
       contentType: 'json',
       specifyBody: 'json',
-      jsonBody: expr('{{ JSON.stringify({ update_id: $json.update_id, chat_id: String($json.message.chat.id), name: [$json.message.from.first_name, $json.message.from.last_name].filter(Boolean).join(" ") || null, text: $json.message.text }) }}'),
+      jsonBody: expr('{{ JSON.stringify($json.body) }}'),
       options: { timeout: 20000 }
     },
     credentials: { httpHeaderAuth: newCredential('Alassar Site API') }
@@ -156,7 +141,7 @@ const agent = node({
     name: 'Alassar Assistant',
     parameters: {
       promptType: 'define',
-      text: expr('{{ $json.history_text ? "المحادثة السابقة:\\n" + $json.history_text + "\\n\\n" : "" }}{{ $json.is_start ? "الزبون فتح البوت الآن (/start). رحّب فيه باسم مفروشات العصار باختصار واسأله كيف بتقدر تساعده." : "رسالة الزبون الجديدة: " + $("Customer Message").item.json.message.text }}'),
+      text: expr('{{ $json.history_text ? "المحادثة السابقة:\\n" + $json.history_text + "\\n\\n" : "" }}{{ $json.is_start ? "الزبون فتح البوت الآن (/start). رحّب فيه باسم مفروشات العصار باختصار واسأله كيف بتقدر تساعده." : "رسالة الزبون الجديدة: " + $("Message From Site").item.json.body.text }}'),
       options: { systemMessage: SYSTEM, maxIterations: 6, enableStreaming: false }
     },
     subnodes: { model: gemini, tools: [productsTool, orderTool, handoffTool] }
@@ -164,28 +149,11 @@ const agent = node({
   output: [{ output: 'أهلين فيك! الستائر عنا بتبدأ من 25 ₪ للمتر.' }]
 });
 
-const sendReply = node({
-  type: 'n8n-nodes-base.telegram',
-  version: 1.2,
-  config: {
-    name: 'Send Reply',
-    parameters: {
-      resource: 'message',
-      operation: 'sendMessage',
-      chatId: expr('{{ $("Customer Message").item.json.message.chat.id }}'),
-      text: expr('{{ $json.output.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;") }}'),
-      additionalFields: { appendAttribution: false, parse_mode: 'HTML' }
-    },
-    credentials: { telegramApi: newCredential('Alassar Customer Bot') }
-  },
-  output: [{ ok: true, result: { message_id: 6 } }]
-});
-
 const saveReply = node({
   type: 'n8n-nodes-base.httpRequest',
   version: 4.5,
   config: {
-    name: 'Save Reply',
+    name: 'Send Reply via Site',
     parameters: {
       method: 'POST',
       url: SITE + '/api/v1/bot/reply',
@@ -194,16 +162,16 @@ const saveReply = node({
       sendBody: true,
       contentType: 'json',
       specifyBody: 'json',
-      jsonBody: expr('{{ JSON.stringify({ conversation_id: $("Save Incoming Message").item.json.conversation_id, text: $("Alassar Assistant").item.json.output }) }}')
+      jsonBody: expr('{{ JSON.stringify({ conversation_id: $("Save Incoming Message").item.json.conversation_id, text: $json.output, send: true }) }}')
     },
     credentials: { httpHeaderAuth: newCredential('Alassar Site API') }
   },
   output: [{ ok: true }]
 });
 
-const note = sticky('## بوت زبائن العصار\n1. تليجرام ← الموقع يحفظ الرسالة ويقرر إذا البوت يرد (تشغيل/إيقاف وتحويل لموظف من لوحة الموقع).\n2. Gemini يجاوب ويستعمل أدوات الموقع (منتجات، حالة طلب، تحويل لموظف).\n3. الرد يروح للزبون ويتسجل بالموقع.\n\nالحسابات: Alassar Customer Bot (توكن بوت الزبائن)، Gemini Alassar، Alassar Site API (Header X-API-Key).', [telegramIn, hasText, saveIncoming], { color: 4 });
+const note = sticky('## بوت زبائن العصار (وضع n8n)\n1. الموقع يستقبل رسائل تليجرام ويرسلها هنا موقّعة.\n2. الموقع يحفظ الرسالة ويقرر إذا البوت يرد (تشغيل/إيقاف وتحويل لموظف من لوحة الموقع).\n3. Gemini يجاوب ويستعمل أدوات الموقع.\n4. الموقع يرسل الرد للزبون ويسجله.\n\nانسخ رابط Production من عقدة Message From Site وضعه في لوحة الموقع ← البوت.\nالحسابات: Gemini Alassar، Alassar Site API (Header X-API-Key).', [siteIn, saveIncoming], { color: 4 });
 
 export default workflow('alassar-customer-bot', 'Alassar - Telegram Customer Bot')
-  .add(telegramIn)
-  .to(hasText.onTrue(saveIncoming.to(shouldReply.onTrue(agent.to(sendReply.to(saveReply))))))
+  .add(siteIn)
+  .to(saveIncoming.to(shouldReply.onTrue(agent.to(saveReply))))
   .add(note);

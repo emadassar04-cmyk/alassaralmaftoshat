@@ -15,12 +15,12 @@ const EP = [
   { m: 'PATCH', p: '/api/v1/orders/AS-1001/status', d: 'تحديث الحالة: new / confirmed / ready / received / cancelled. التأكيد يخصم المخزون والإلغاء يرجعه.', body: '{ "status": "confirmed" }', res: '{ "ok": true, "number": "AS-1001", "status": "confirmed" }' },
   { m: 'POST', p: '/api/v1/conversations/messages', d: 'حفظ رسالة من محادثة البوت (من الزبون أو من البوت).',
     body: '{\n  "channel": "telegram", "external_id": "123456789", "role": "customer",\n  "text": "كم سعر الستائر؟", "customer_name": "أحمد", "phone": "0591234567"\n}', res: '{ "ok": true, "conversation_id": "<uuid>" }' },
-  { m: 'POST', p: '/api/v1/bot/incoming', d: 'بوت تليجرام (n8n): احفظ رسالة الزبون واعرف هل يرد البوت. يرجع should_reply و conversation_id و history_text (آخر المحادثة). إن كان should_reply = false (البوت متوقف أو استلمتَ المحادثة) لا ترد.',
-    body: '{ "update_id": 123456, "chat_id": "987654321", "name": "أحمد", "text": "كم سعر الستائر؟" }', res: '{ "ok": true, "should_reply": true, "conversation_id": "<uuid>", "history_text": "…" }' },
+  { m: 'POST', p: '/api/v1/bot/incoming', d: 'بوت تليجرام (n8n): الموقع يستقبل رسائل تليجرام ويرسلها لـ Webhook الـ workflow موقّعة (sig). أعد إرسالها هنا كما هي لتُحفظ وتعرف هل يرد البوت. يرجع should_reply و conversation_id و history_text (آخر المحادثة). إن كان should_reply = false (البوت متوقف أو استلمتَ المحادثة) لا ترد.',
+    body: '{ "update_id": 123456, "chat_id": "987654321", "name": "أحمد", "text": "كم سعر الستائر؟", "sig": "<كما وصل من الموقع>" }', res: '{ "ok": true, "should_reply": true, "conversation_id": "<uuid>", "history_text": "…" }' },
   { m: 'GET', p: '/api/v1/bot/products?q=ستائر', d: 'أداة للبوت: بحث مختصر في المنتجات بالأسعار والتوفر والروابط.', body: null, res: '{ "matched": 2, "products": [{ "name", "price_from", "in_stock", "options", "url" }] }' },
   { m: 'GET', p: '/api/v1/bot/order-status?number=AS-1001&phone=0591234567', d: 'أداة للبوت: حالة الطلب، فقط إذا طابق رقم الجوال الطلب.', body: null, res: '{ "found": true, "status": "مؤكد", "total": 120, "track_url": "…" }' },
   { m: 'POST', p: '/api/v1/bot/handoff', d: 'أداة للبوت: تحويل المحادثة لموظف (يسكت البوت فيها ويصلك إشعار).', body: '{ "conversation_id": "<uuid>", "reason": "شكوى" }', res: '{ "ok": true }' },
-  { m: 'POST', p: '/api/v1/bot/reply', d: 'احفظ رد البوت بعد إرساله على تليجرام، ليظهر في الداشبورد.', body: '{ "conversation_id": "<uuid>", "text": "الستائر بتبدأ من 60 ₪…" }', res: '{ "ok": true }' },
+  { m: 'POST', p: '/api/v1/bot/reply', d: 'يرسل رد البوت للزبون على تليجرام (بتوكن الموقع) ويحفظه في الداشبورد. send: false = حفظ فقط.', body: '{ "conversation_id": "<uuid>", "text": "الستائر بتبدأ من 60 ₪…" }', res: '{ "ok": true }' },
 ] as const
 const TONE: Record<string, string> = { GET: 'bg-emerald-100 text-emerald-800', POST: 'bg-sky-100 text-sky-800', PATCH: 'bg-amber-100 text-amber-800' }
 
