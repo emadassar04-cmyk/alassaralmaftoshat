@@ -31,6 +31,7 @@ export async function POST(req: Request) {
   const { data: cfg } = await serverRpc<Cfg>('bot_config', {})
   const hdr = req.headers.get('x-telegram-bot-api-secret-token') ?? ''
   if (!cfg?.secrets?.webhook_hash || sha256(hdr) !== cfg.secrets.webhook_hash) return NextResponse.json({ ok: false }, { status: 401 })
+  if (cfg.config.mode !== 'site') return NextResponse.json({ ok: true }) // default: the bot runs in n8n
   const u = (await req.json().catch(() => null)) as Update | null
   const msg = u?.message
   if (!u || !msg || msg.chat.type !== 'private') return NextResponse.json({ ok: true })
