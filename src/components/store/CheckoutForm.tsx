@@ -46,6 +46,7 @@ export function CheckoutForm({ branches, accounts }: { branches: Branch[]; accou
         <fieldset><legend className="mb-2 text-sm text-muted">طريقة الاستلام</legend>
           <div className="grid grid-cols-2 gap-2">{[['pickup', 'استلام من الفرع'], ['delivery', 'توصيل']].map(([v, l]) => <button type="button" key={v} aria-pressed={f.fulfillment === v} onClick={() => { set('fulfillment', v); set('payment_method', v === 'pickup' ? 'in_store' : 'cod') }}
             className={`border py-3 ${f.fulfillment === v ? 'border-copper bg-copper/15 text-copper-lt' : 'border-copper/25'}`}>{l}</button>)}</div></fieldset>
+        {f.fulfillment === 'delivery' && <p className="border border-copper/25 bg-night-2 p-3 text-sm text-copper-lt">🚚 أجرة التوصيل غير مشمولة، نتفق عليها معك على واتساب حسب منطقتك.</p>}
         {f.fulfillment === 'delivery' && <label className="block text-sm text-muted">عنوان التوصيل<textarea className="field mt-1" required value={f.address} onChange={(e) => set('address', e.target.value)} /></label>}
         <fieldset><legend className="mb-2 text-sm text-muted">طريقة الدفع</legend>
           <div className="grid gap-2 sm:grid-cols-2">{methods.map((m) => <button type="button" key={m} aria-pressed={f.payment_method === m} onClick={() => set('payment_method', m)} className={`border py-3 ${f.payment_method === m ? 'border-copper bg-copper/15 text-copper-lt' : 'border-copper/25'}`}>{PAYMENT_LABEL[m]}</button>)}</div>
@@ -59,7 +60,7 @@ export function CheckoutForm({ branches, accounts }: { branches: Branch[]; accou
         <div className="flex gap-2"><input className="field" dir="ltr" placeholder="كود الخصم" value={f.coupon} onChange={(e) => set('coupon', e.target.value)} /><button type="button" className="btn !px-4" onClick={applyCoupon} disabled={!f.coupon}>تطبيق</button></div>
         {cMsg && <p className={`text-sm ${disc ? 'text-copper-lt' : 'text-danger'}`}>{cMsg}</p>}
         {disc > 0 && <p className="flex justify-between text-sm"><span>الخصم</span><span>-{fmt(disc)}</span></p>}
-        <p className="flex justify-between border-t border-copper/15 pt-3 text-xl"><span>الإجمالي</span><strong className="text-copper-lt">{fmt(subtotal - disc)}</strong></p>
+        <p className="flex justify-between border-t border-copper/15 pt-3 text-xl"><span>{f.fulfillment === 'delivery' ? 'الإجمالي (بدون التوصيل)' : 'الإجمالي'}</span><strong className="text-copper-lt">{fmt(subtotal - disc)}</strong></p>
         {lines.some((l) => l.is_custom) && <p className="text-xs text-muted">السعر النهائي للمنتجات المفصّلة يُحدَّد بعد مراجعة القياسات.</p>}
         <Turnstile onToken={onToken} />
         {err && <p className="text-sm text-danger" role="alert">{err}</p>}

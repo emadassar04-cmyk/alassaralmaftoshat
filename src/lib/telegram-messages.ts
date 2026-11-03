@@ -15,7 +15,7 @@ export function telegramText(event: string, d: D): string | null {
       }).join('\n')
       return [`🛋️ <b>طلب جديد ${esc(d.number)}</b>`, `الزبون: ${esc(d.customer_name)} - ${esc(d.phone)}`, `الفرع: ${esc(d.branch)}`,
         `الاستلام: ${d.fulfillment === 'pickup' ? 'من الفرع' : `توصيل - ${esc(d.address)}`}`, `الدفع: ${PAY[String(d.payment_method)] ?? esc(d.payment_method)}`,
-        ...(Number(d.discount) > 0 ? [`الخصم: ${esc(d.discount)} ₪ (${esc(d.coupon_code)})`] : []), `<b>الإجمالي: ${esc(d.total)} ₪</b>`, '', items,
+        ...(Number(d.discount) > 0 ? [`الخصم: ${esc(d.discount)} ₪ (${esc(d.coupon_code)})`] : []), `<b>الإجمالي: ${esc(d.total)} ₪</b>${d.fulfillment === 'delivery' ? ' + توصيل (يُتفق عليه)' : ''}`, '', items,
         ...(d.notes ? ['', `ملاحظات: ${esc(d.notes)}`] : []), '', `التتبع: ${SITE}/track/${esc(d.track_token)}`].join('\n')
     }
     case 'order.status_changed': return `📦 الطلب <b>${esc(d.number)}</b>: ${ST[String(d.from)] ?? esc(d.from)} ← <b>${ST[String(d.to)] ?? esc(d.to)}</b>\nالزبون: ${esc(d.customer_name)} - ${esc(d.phone)}`
