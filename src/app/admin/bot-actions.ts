@@ -22,13 +22,13 @@ const tg = (token: string, method: string, body?: unknown) => fetch(`https://api
 export async function saveBotKeys(_: R | undefined, fd: FormData): Promise<R> {
   const { sb } = await requireOwner()
   const token = String(fd.get('token') ?? '').trim(); const key = String(fd.get('anthropic_key') ?? '').trim(); const gkey = String(fd.get('gemini_key') ?? '').replace(/\s+/g, '')
-  const provider = fd.get('provider') === 'claude' ? 'claude' : 'gemini'
+  const provider = fd.get('provider') === 'claude' ? 'claude' : 'gemini'; const mode = fd.get('mode') === 'site' ? 'site' : 'n8n'
   if (token && !/^\d+:[\w-]{20,}$/.test(token)) return { error: 'صيغة Bot Token غير صحيحة' }
   if (key && !/^sk-ant-[\w-]{20,}$/.test(key)) return { error: 'مفتاح Claude يبدأ بـ sk-ant-' }
   if (gkey && !/^[\w.\-]{20,300}$/.test(gkey)) return { error: 'مفتاح Gemini يبدو غير مكتمل، انسخه من جديد من AI Studio' }
   const secrets: Record<string, string> = {}
   if (token) secrets.token = encrypt(token); if (key) secrets.anthropic_key = encrypt(key); if (gkey) secrets.gemini_key = encrypt(gkey)
-  const { error } = await saveRow(sb, { secrets, config: { provider, ...(token ? { username: null, connected: false } : {}) } })
+  const { error } = await saveRow(sb, { secrets, config: { provider, mode, ...(token ? { username: null, connected: false } : {}) } })
   if (error) return { error: 'تعذّر الحفظ' }
   done(); return { ok: true, message: token ? 'تم الحفظ. اضغط «ربط البوت بتليجرام» الآن.' : 'تم الحفظ' }
 }

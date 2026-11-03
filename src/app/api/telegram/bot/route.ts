@@ -6,7 +6,7 @@ import { botReply } from '@/lib/bot'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
-type Cfg = { config: { enabled?: boolean; provider?: 'gemini' | 'claude' }; secrets: { token?: string; anthropic_key?: string; gemini_key?: string; webhook_hash?: string } }
+type Cfg = { config: { enabled?: boolean; provider?: 'gemini' | 'claude'; mode?: 'site' | 'n8n' }; secrets: { token?: string; anthropic_key?: string; gemini_key?: string; webhook_hash?: string } }
 type Update = { update_id: number; message?: { chat: { id: number; type: string }; from?: { first_name?: string; last_name?: string; username?: string }; text?: string } }
 
 const WELCOME = 'أهلاً وسهلاً فيك بمفروشات العصار 👋\nأنا المساعد التلقائي، بقدر أساعدك بالأسعار والمنتجات والتفصيل وحالة طلبك.\nشو بتحب تعرف؟'
@@ -16,6 +16,7 @@ export async function POST(req: Request) {
   const { data: cfg } = await serverRpc<Cfg>('bot_config', {})
   const hdr = req.headers.get('x-telegram-bot-api-secret-token') ?? ''
   if (!cfg?.secrets?.webhook_hash || sha256(hdr) !== cfg.secrets.webhook_hash) return NextResponse.json({ ok: false }, { status: 401 })
+  if (cfg.config.mode !== 'site') return NextResponse.json({ ok: true }) // default: the bot runs in n8n
   const u = (await req.json().catch(() => null)) as Update | null
   const msg = u?.message
   if (!u || !msg || msg.chat.type !== 'private') return NextResponse.json({ ok: true })
