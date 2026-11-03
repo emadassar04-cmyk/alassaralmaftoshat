@@ -1,0 +1,399 @@
+{
+  "name": "مفروشات العصار - أحداث الموقع",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "alassar",
+        "options": {}
+      },
+      "id": "13221d63-6bdd-4dd4-9bd6-afbeac4a2bdf",
+      "name": "Webhook من الموقع",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        300
+      ],
+      "webhookId": "87fafdbb-068c-411e-929f-e3967372b034"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "6c4d1792-e149-47d7-ba01-4a1c71298194",
+              "leftValue": "={{ $json.headers['x-assar-secret'] }}",
+              "rightValue": "ضع_سر_التوقيع_هنا_whsec_...",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6e3de56c-cd2f-4399-ac79-0af2d02a6f95",
+      "name": "التحقق من السر",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "6d2262f4-4188-4405-a2ca-28fa83029c72",
+      "name": "مرفوض (سر خاطئ)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        480,
+        520
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "9640f5eb-1068-41ee-9af4-06ebef32a5a4",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "order.created",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "order.created"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "086463b7-e38e-4e2a-935d-651bbc187075",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "order.status_changed",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "order.status_changed"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "4858db2c-e654-46ae-bff1-654fac1eac36",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "lead.created",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "lead.created"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "2066cf4d-7f73-4015-adb9-95b9dbf92cf1",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "review.created",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "review.created"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "afdb49c4-92c1-47d3-914c-c6ae65eaca39",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "stock.low",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "stock.low"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose"
+                },
+                "conditions": [
+                  {
+                    "id": "5225f3e0-a404-4616-b664-a514dbf335e9",
+                    "leftValue": "={{ $json.body.event }}",
+                    "rightValue": "ping",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ping"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "id": "e395e34f-f62d-47f1-9735-adcc7a12d907",
+      "name": "توزيع حسب الحدث",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        480,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "ضع_CHAT_ID_هنا",
+        "text": "=🛋️ طلب جديد *{{ $json.body.data.number }}*\nالزبون: {{ $json.body.data.customer_name }} - {{ $json.body.data.phone }}\nالفرع: {{ $json.body.data.branch }}\nالاستلام: {{ $json.body.data.fulfillment === 'pickup' ? 'من الفرع' : 'توصيل - ' + $json.body.data.address }}\nالدفع: {{ $json.body.data.payment_method }}\nالإجمالي: {{ $json.body.data.total }} ₪\n\n{{ $json.body.data.items.map(i => '• ' + i.name + (i.variant ? ' (' + i.variant + ')' : '') + ' × ' + i.qty + (i.is_custom ? ' [تفصيل]' : '')).join('\\n') }}\n\nالتتبع: https://alassaralmaftoshat.vercel.app/track/{{ $json.body.data.track_token }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "b47f7ff8-3657-4baa-b5b5-810595c1e0c9",
+      "name": "إشعار: طلب جديد",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "ضع_CHAT_ID_هنا",
+        "text": "=📦 الطلب {{ $json.body.data.number }}: {{ $json.body.data.from }} ← {{ $json.body.data.to }}\nالزبون: {{ $json.body.data.customer_name }} - {{ $json.body.data.phone }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "19c38f1e-40ae-4b75-b47b-ac81cdae919b",
+      "name": "إشعار: تغيّرت الحالة",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        160
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "ضع_CHAT_ID_هنا",
+        "text": "=📱 رقم جديد من الموقع: {{ $json.body.data.phone }}\nكود الخصم: {{ $json.body.data.coupon_code }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "88dad7a3-4ede-41ec-b09b-cb0c1d899f54",
+      "name": "إشعار: رقم جديد",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "ضع_CHAT_ID_هنا",
+        "text": "=⭐ تقييم جديد ينتظر الموافقة\nالمنتج: {{ $json.body.data.product }}\nالتقييم: {{ $json.body.data.rating }}/5 - {{ $json.body.data.author }}\n{{ $json.body.data.body }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "36de19b2-c101-4da6-ab7c-415740c6188a",
+      "name": "إشعار: تقييم جديد",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "ضع_CHAT_ID_هنا",
+        "text": "=⚠️ مخزون منخفض: {{ $json.body.data.product }} ({{ $json.body.data.variant }}) - المتبقي {{ $json.body.data.stock }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "170545be-2eaf-4b27-9f9c-7411e125cc97",
+      "name": "إشعار: مخزون منخفض",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        760,
+        640
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "ce900db0-5220-4fb9-a79c-456cdb5ff72d",
+      "name": "اختبار الاتصال (ping)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        760,
+        800
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook من الموقع": {
+      "main": [
+        [
+          {
+            "node": "التحقق من السر",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "التحقق من السر": {
+      "main": [
+        [
+          {
+            "node": "توزيع حسب الحدث",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "مرفوض (سر خاطئ)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "توزيع حسب الحدث": {
+      "main": [
+        [
+          {
+            "node": "إشعار: طلب جديد",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "إشعار: تغيّرت الحالة",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "إشعار: رقم جديد",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "إشعار: تقييم جديد",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "إشعار: مخزون منخفض",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "اختبار الاتصال (ping)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {}
+}
