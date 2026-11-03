@@ -21,6 +21,7 @@ export function telegramText(event: string, d: D): string | null {
     case 'order.status_changed': return `📦 الطلب <b>${esc(d.number)}</b>: ${ST[String(d.from)] ?? esc(d.from)} ← <b>${ST[String(d.to)] ?? esc(d.to)}</b>\nالزبون: ${esc(d.customer_name)} - ${esc(d.phone)}`
     case 'lead.created': return `📱 رقم جديد من الموقع: ${esc(d.phone)}\nكود الخصم: ${esc(d.coupon_code)}`
     case 'review.created': return `⭐ تقييم جديد ينتظر الموافقة\nالمنتج: ${esc(d.product)}\nالتقييم: ${esc(d.rating)}/5 - ${esc(d.author)}${d.body ? `\n${esc(d.body)}` : ''}`
+    case 'bot.handoff': return `🙋 زبون على بوت تليجرام بحاجة لموظف\nالزبون: ${esc(d.customer_name)}\nالسبب: ${esc(d.reason)}\nرد عليه من: ${SITE}/admin/conversations/${esc(d.conversation_id)}`
     case 'stock.low': return `⚠️ مخزون منخفض: ${esc(d.product)} (${esc(d.variant)}) - المتبقي <b>${esc(d.stock)}</b>`
     default: return null
   }

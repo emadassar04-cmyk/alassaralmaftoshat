@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import { requireOwner, dt, STATUS_AR, STATUS_TONE } from '@/lib/admin'
 import { fmt } from '@/lib/format'
 import { PrintButton } from '@/components/admin/OrderForms'
+import { ManualReply } from '@/components/admin/BotForms'
+import { setHandledBy } from '@/app/admin/bot-actions'
 
 export const metadata: Metadata = { title: 'محادثة', robots: { index: false } }
 export const dynamic = 'force-dynamic'
@@ -13,7 +15,7 @@ export default async function Conversation(props: PageProps<'/admin/conversation
   const { sb } = await requireOwner()
   const { data: c } = await sb.from('bot_conversations').select('*').eq('id', id).maybeSingle(); if (!c) notFound()
   const [{ data: msgs }, { data: orders }] = await Promise.all([
-    sb.from('bot_messages').select('id, role, body, sent_at').eq('conversation_id', id).order('sent_at').limit(2000),
+    sb.from('bot_messages').select('id, role, author, body, sent_at').eq('conversation_id', id).order('sent_at').limit(2000),
     c.phone ? sb.from('orders').select('id, number, status, total, created_at').eq('phone', c.phone).order('created_at', { ascending: false }).limit(10) : Promise.resolve({ data: [] as { id: string; number: string; status: string; total: number; created_at: string }[] })])
   return (
     <>
@@ -24,8 +26,14 @@ export default async function Conversation(props: PageProps<'/admin/conversation
         {msgs?.map((m) => (
           <div key={m.id} className={`flex ${m.role === 'bot' ? 'justify-start' : 'justify-end'}`}>
             <div className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm ${m.role === 'bot' ? 'rounded-es-sm bg-[#e8f3e6]' : 'rounded-ee-sm bg-[#f1e7d2]'}`}>
-              <p className="mb-0.5 text-[10px] font-semibold text-[var(--a-mute)]">{m.role === 'bot' ? '🤖 البوت' : (c.customer_name ?? 'الزبون')}</p>{m.body}<p className="mt-1 text-[10px] text-[var(--a-mute)]">{dt(m.sent_at)}</p></div></div>))}
+              <p className="mb-0.5 text-[10px] font-semibold text-[var(--a-mute)]">{m.role === 'bot' ? (m.author === 'human' ? '👤 أنت' : '🤖 البوت') : (c.customer_name ?? 'الزبون')}</p>{m.body}<p className="mt-1 text-[10px] text-[var(--a-mute)]">{dt(m.sent_at)}</p></div></div>))}
         {!msgs?.length && <p className="a-muted py-8 text-center">لا رسائل</p>}</section>
+      {c.channel === 'telegram' && (
+        <section className="a-card no-print space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-2"><p className="text-sm">من يرد الآن: <b>{c.handled_by === 'human' ? '👤 أنت (البوت ساكت هنا)' : '🤖 البوت'}</b>{c.needs_human && <span className="a-pill ms-2 bg-rose-100 text-rose-800">الزبون ينتظر رداً</span>}</p>
+            <form action={setHandledBy}><input type="hidden" name="id" value={c.id} /><input type="hidden" name="to" value={c.handled_by === 'human' ? 'bot' : 'human'} /><button className="a-btn">{c.handled_by === 'human' ? 'إرجاع المحادثة للبوت' : 'استلام المحادثة'}</button></form></div>
+          <ManualReply id={c.id} />
+        </section>)}
     </>
   )
 }
