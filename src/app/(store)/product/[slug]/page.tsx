@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Star } from 'lucide-react'
+import { MessageCircle, Ruler, Star, Store, Truck } from 'lucide-react'
 import { getBranches, getProduct, getProducts, getReviews } from '@/lib/data'
 import { ProductBuy } from '@/components/store/ProductBuy'
 import { ProductCard } from '@/components/store/ProductCard'
+import { Breadcrumbs } from '@/components/store/Breadcrumbs'
 import { SITE, unitPrice } from '@/lib/format'
 
 export const revalidate = 60
@@ -25,29 +27,37 @@ export default async function ProductPage(props: PageProps<'/product/[slug]'>) {
   const ld = { '@context': 'https://schema.org', '@type': 'Product', name: p.name, description: p.description, image: images.map((i) => `${SITE}${i.url}`),
     offers: { '@type': 'Offer', priceCurrency: 'ILS', price: unitPrice(p), availability: 'https://schema.org/InStock', url: `${SITE}/product/${p.slug}` },
     ...(reviews.length ? { aggregateRating: { '@type': 'AggregateRating', ratingValue: avg.toFixed(1), reviewCount: reviews.length } } : {}) }
+  const perks = [[Store, `متوفر للمعاينة في ${branches.length > 1 ? 'فرعَي' : 'فرع'} ${branches.map((b) => b.name.replace('فرع ', '')).join(' و')}`], [Truck, 'استلام من الفرع أو توصيل، وأجرة التوصيل نتفق عليها على واتساب'],
+    [p.is_custom ? Ruler : MessageCircle, p.is_custom ? 'تفصيل على قياساتك، ونؤكد السعر النهائي قبل التنفيذ' : 'عندك سؤال؟ راسلنا على واتساب ونرد عليك بسرعة']] as const
   return (
-    <div className="container-x py-8 md:py-14">
+    <div className="container-x py-6 md:py-10">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(ld) }} />
-      <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-        <div className="space-y-3">
+      <Breadcrumbs items={[{ href: '/shop', label: 'المتجر' }, ...(p.categories ? [{ href: `/shop?cat=${p.categories.slug}`, label: p.categories.name }] : []), { label: p.name }]} />
+      <div className="mt-6 grid gap-8 md:mt-8 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
+        <div className={`grid gap-3 ${images.length > 1 ? 'sm:grid-cols-2' : ''}`}>
           {images.map((im, i) => (
-            <div key={im.url} className="relative aspect-square overflow-hidden border border-copper/15 bg-night-2">
-              <Image src={im.url} alt={im.alt ?? p.name} fill preload={i === 0} fetchPriority={i === 0 ? 'high' : 'auto'} sizes="(max-width:768px) 100vw, 50vw" className="object-cover" /></div>))}
+            <div key={im.url} className={`media aspect-[4/5] ${i === 0 && images.length > 1 ? 'sm:col-span-2 sm:aspect-[5/4]' : ''}`}>
+              <Image src={im.url} alt={im.alt ?? p.name} fill preload={i === 0} fetchPriority={i === 0 ? 'high' : 'auto'} sizes="(max-width:1024px) 100vw, 55vw" className="object-cover" /></div>))}
+          {images.length === 0 && <div className="media aspect-[4/5]" />}
         </div>
-        <div className="md:sticky md:top-24 md:self-start">
-          {p.categories && <p className="eyebrow">{p.categories.name}</p>}
-          <h1 className="font-display copper-text mt-2 text-4xl md:text-5xl">{p.name}</h1>
-          {reviews.length > 0 && <p className="mt-2 flex items-center gap-1 text-sm text-copper-lt"><Star size={16} fill="currentColor" />{avg.toFixed(1)} <span className="text-muted">({reviews.length} تقييم)</span></p>}
-          <p className="mt-4 text-cream/85">{p.description}</p>
-          <div className="mt-6"><ProductBuy p={p} image={images[0]?.url ?? null} waPhone={branches[0]?.whatsapp ?? null} /></div>
+        <div className="lg:sticky lg:top-28 lg:self-start">
+          {p.categories && <Link href={`/shop?cat=${p.categories.slug}`} className="eyebrow">{p.categories.name}</Link>}
+          <h1 className="t-h2 mt-4 !text-[clamp(2rem,4.4vw,3.2rem)]">{p.name}</h1>
+          {reviews.length > 0 && <p className="mt-3 flex items-center gap-1.5 text-sm text-brown"><Star size={16} fill="currentColor" /><span className="num">{avg.toFixed(1)}</span> <span className="text-ink-2">(<span className="num">{reviews.length}</span> تقييم)</span></p>}
+          {p.description && <p className="t-lead mt-5">{p.description}</p>}
+          <div className="mt-8 border-t hairline pt-8"><ProductBuy p={p} image={images[0]?.url ?? null} waPhone={branches[0]?.whatsapp ?? null} /></div>
+          <ul className="mt-8 space-y-3.5 rounded-[var(--radius-lg)] bg-sand p-5 text-sm text-ink-2">
+            {perks.map(([I, t]) => <li key={t} className="flex gap-3"><I size={18} strokeWidth={1.5} className="mt-0.5 shrink-0 text-brown" />{t}</li>)}
+          </ul>
         </div>
       </div>
-      <section className="mt-16"><h2 className="font-display text-3xl text-copper-lt">التقييمات</h2>
-        {reviews.length === 0 ? <p className="mt-3 text-muted">لا توجد تقييمات بعد. ستظهر تقييمات الزبائن هنا بعد مراجعتها.</p> : (
-          <ul className="mt-4 grid gap-3 md:grid-cols-2">{reviews.map((r) => <li key={r.id} className="border border-copper/15 p-4"><p className="flex gap-0.5 text-copper">{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</p><p className="mt-1">{r.body}</p><p className="mt-1 text-sm text-muted">{r.author_name}</p></li>)}</ul>)}
+      <section className="mt-20 border-t hairline pt-12" aria-labelledby="reviews-h">
+        <h2 id="reviews-h" className="t-h3 !text-2xl">التقييمات</h2>
+        {reviews.length === 0 ? <p className="mt-3 text-ink-2">لا توجد تقييمات بعد. ستظهر تقييمات الزبائن هنا بعد مراجعتها.</p> : (
+          <ul className="mt-6 grid gap-4 md:grid-cols-2">{reviews.map((r) => <li key={r.id} className="card p-6"><p className="flex gap-0.5 text-gold">{Array.from({ length: r.rating }, (_, i) => <Star key={i} size={14} fill="currentColor" />)}</p><p className="mt-3 leading-8">{r.body}</p><p className="mt-3 text-sm text-ink-2">{r.author_name}</p></li>)}</ul>)}
       </section>
-      {similar.length > 0 && <section className="mt-16"><h2 className="font-display text-3xl text-copper-lt">منتجات مشابهة</h2>
-        <div className="mt-6 grid grid-cols-2 gap-x-3 gap-y-8 md:grid-cols-4">{similar.map((s) => <ProductCard key={s.id} p={s} />)}</div></section>}
+      {similar.length > 0 && <section className="mt-20" aria-labelledby="similar-h"><p className="eyebrow">من نفس القسم</p><h2 id="similar-h" className="t-h2 mt-3 !text-[clamp(1.6rem,3.2vw,2.4rem)]">قد يعجبك أيضاً</h2>
+        <div className="mt-8 grid grid-cols-2 gap-x-3 gap-y-10 md:grid-cols-4 md:gap-x-6">{similar.map((s) => <ProductCard key={s.id} p={s} />)}</div></section>}
     </div>
   )
 }

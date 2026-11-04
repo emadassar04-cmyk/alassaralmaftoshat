@@ -8,8 +8,11 @@
 Next.js 16 (App Router) + TypeScript + Tailwind v4، Framer Motion + Lenis، Supabase (Postgres/Auth/Storage + RLS)، Vercel.
 **Next 16 مختلف عن المعروف**: اقرأ `node_modules/next/dist/docs/` قبل كتابة كود جديد (`params` Promise، `PageProps<'/route'>`، لا middleware بل proxy).
 
-## الهوية «ليل ونحاس»
-خلفية `#0E0B09`، نحاسي `#C8A36A`/`#E6C48E`، كريمي `#F3EBDD`، ثانوي `#A89C8A`، زيتوني `#2E3A2F`. عناوين Reem Kufi ونص IBM Plex Sans Arabic. الرموز في `src/app/globals.css`.
+## الهوية «عاج وجوز» (Ivory & Walnut) — منذ إعادة التصميم 2026-11
+خلفية عاجية `#FAF9F6`، أبيض، بيج شامبانيا `#EDE4D8`، بني فاخر `#76563C` (الأزرار)، ذهبي ناعم `#B99A72` (زخرفة فقط: تباينه ضعيف على العاجي)، فحمي `#28251F` (النص)، رمادي `#77726A` (نسخة أغمق من `#858078` لتجاوز WCAG AA).
+عناوين Alexandria (300/400) ونص IBM Plex Sans Arabic. الرموز والمكوّنات (`.btn`، `.card`، `.media`، `.t-h2`…) في `src/app/globals.css` داخل `@layer components` (حتى لا تطغى على أدوات Tailwind مثل `hidden`).
+الصور التحريرية والفروع حالياً «صور تعبيرية» (أنسجة أقمشة مولّدة) مع وسم ظاهر؛ لاستبدالها بصور حقيقية: ضع الصورة بنفس المسار وغيّر `real: true` في `src/lib/media.ts`. لا تُعرض صورة على أنها صورة حقيقية للفرع أو المنتج ما لم تكن كذلك.
+لوحة التحكم لها ثيمها الخاص `.admin` في نفس الملف.
 
 ## الأمان (قواعد ثابتة)
 - لا أسرار في المتصفح. مفتاح anon/publishable فقط للعامة؛ كل الجداول RLS.

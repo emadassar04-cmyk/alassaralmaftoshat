@@ -1,4 +1,5 @@
 'use client'
+import { ShoppingBag } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -36,7 +37,14 @@ export function CheckoutForm({ branches, accounts }: { branches: Branch[]; accou
     clear(); if (j.whatsapp) window.open(j.whatsapp, '_blank', 'noopener')
     router.push(`/thank-you/${j.token}`)
   }
-  if (lines.length === 0) return <div className="py-24 text-center"><p className="text-muted">سلتك فارغة.</p><Link href="/shop" className="btn btn-solid mt-6">تصفّح المتجر</Link></div>
+  if (lines.length === 0) return (
+    <div className="panel flex flex-col items-center px-6 py-16 text-center">
+      <span className="grid h-16 w-16 place-items-center rounded-full bg-white text-brown"><ShoppingBag size={26} strokeWidth={1.4} /></span>
+      <p className="t-h3 mt-6">سلتك فارغة حالياً</p>
+      <p className="mt-2 max-w-sm text-ink-2">تصفّح مجموعتنا واختر ما يناسب بيتك، أو اطلب تفصيلاً على مقاسك.</p>
+      <div className="mt-8 flex flex-col gap-3 sm:flex-row"><Link href="/shop" className="btn btn-solid">تصفّح المتجر</Link><Link href="/custom" className="btn">اطلب تفصيل</Link></div>
+    </div>
+  )
   const acct = accounts[f.payment_method]
   return (
     <form onSubmit={submit} className="grid gap-10 md:grid-cols-[1fr_360px]">
@@ -46,22 +54,22 @@ export function CheckoutForm({ branches, accounts }: { branches: Branch[]; accou
         <label className="block text-sm text-muted">الفرع<select className="field mt-1" value={f.branch_id} onChange={(e) => set('branch_id', e.target.value)}>{branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
         <fieldset><legend className="mb-2 text-sm text-muted">طريقة الاستلام</legend>
           <div className="grid grid-cols-2 gap-2">{[['pickup', 'استلام من الفرع'], ['delivery', 'توصيل']].map(([v, l]) => <button type="button" key={v} aria-pressed={f.fulfillment === v} onClick={() => { set('fulfillment', v); set('payment_method', v === 'pickup' ? 'in_store' : 'cod') }}
-            className={`border py-3 ${f.fulfillment === v ? 'border-copper bg-copper/15 text-copper-lt' : 'border-copper/25'}`}>{l}</button>)}</div></fieldset>
-        {f.fulfillment === 'delivery' && <p className="border border-copper/25 bg-night-2 p-3 text-sm text-copper-lt">🚚 أجرة التوصيل غير مشمولة، نتفق عليها معك على واتساب حسب منطقتك.</p>}
+            className={`border py-3 ${f.fulfillment === v ? 'border-brown bg-sand text-brown' : 'border-line'}`}>{l}</button>)}</div></fieldset>
+        {f.fulfillment === 'delivery' && <p className="rounded-[var(--radius-md)] border border-line bg-white p-3 text-sm text-brown">أجرة التوصيل غير مشمولة، نتفق عليها معك على واتساب حسب منطقتك.</p>}
         {f.fulfillment === 'delivery' && <label className="block text-sm text-muted">عنوان التوصيل<textarea className="field mt-1" required value={f.address} onChange={(e) => set('address', e.target.value)} /></label>}
         <fieldset><legend className="mb-2 text-sm text-muted">طريقة الدفع</legend>
-          <div className="grid gap-2 sm:grid-cols-2">{methods.map((m) => <button type="button" key={m} aria-pressed={f.payment_method === m} onClick={() => set('payment_method', m)} className={`border py-3 ${f.payment_method === m ? 'border-copper bg-copper/15 text-copper-lt' : 'border-copper/25'}`}>{PAYMENT_LABEL[m]}</button>)}</div>
-          {acct && !['in_store', 'cod'].includes(f.payment_method) && <p className="mt-3 border border-copper/25 bg-night-2 p-3 text-sm">حوّل المبلغ إلى: <strong dir="ltr" className="text-copper-lt">{acct.account}</strong>{acct.holder && ` (${acct.holder})`}<br /><span className="text-muted">ثم أرسل صورة الإيصال على واتساب مع رقم طلبك.</span></p>}</fieldset>
+          <div className="grid gap-2 sm:grid-cols-2">{methods.map((m) => <button type="button" key={m} aria-pressed={f.payment_method === m} onClick={() => set('payment_method', m)} className={`border py-3 ${f.payment_method === m ? 'border-brown bg-sand text-brown' : 'border-line'}`}>{PAYMENT_LABEL[m]}</button>)}</div>
+          {acct && !['in_store', 'cod'].includes(f.payment_method) && <p className="mt-3 rounded-[var(--radius-md)] border border-line bg-white p-3 text-sm">حوّل المبلغ إلى: <strong dir="ltr" className="text-brown">{acct.account}</strong>{acct.holder && ` (${acct.holder})`}<br /><span className="text-muted">ثم أرسل صورة الإيصال على واتساب مع رقم طلبك.</span></p>}</fieldset>
         <label className="block text-sm text-muted">ملاحظات<textarea className="field mt-1" value={f.notes} onChange={(e) => set('notes', e.target.value)} /></label>
         <input className="hidden" tabIndex={-1} autoComplete="off" aria-hidden="true" name="website" value={f.hp} onChange={(e) => set('hp', e.target.value)} />
       </div>
-      <aside className="h-fit space-y-4 border border-copper/25 bg-night-2 p-5 md:sticky md:top-24">
-        <h2 className="font-display text-2xl text-copper-lt">ملخص الطلب</h2>
+      <aside className="h-fit space-y-4 rounded-[var(--radius-md)] border border-line bg-white p-5 md:sticky md:top-24">
+        <h2 className="font-display text-2xl font-light text-charcoal">ملخص الطلب</h2>
         <ul className="space-y-2 text-sm">{lines.map((l) => <li key={l.key} className="flex justify-between gap-3"><span>{l.name}{l.variant_label && ` (${l.variant_label})`} × {l.qty}</span><span className="shrink-0">{fmt(l.unit_price * l.qty)}</span></li>)}</ul>
         <div className="flex gap-2"><input className="field" dir="ltr" placeholder="كود الخصم" value={f.coupon} onChange={(e) => set('coupon', e.target.value)} /><button type="button" className="btn !px-4" onClick={applyCoupon} disabled={!f.coupon}>تطبيق</button></div>
-        {cMsg && <p className={`text-sm ${disc ? 'text-copper-lt' : 'text-danger'}`}>{cMsg}</p>}
+        {cMsg && <p className={`text-sm ${disc ? 'text-brown' : 'text-danger'}`}>{cMsg}</p>}
         {disc > 0 && <p className="flex justify-between text-sm"><span>الخصم</span><span>-{fmt(disc)}</span></p>}
-        <p className="flex justify-between border-t border-copper/15 pt-3 text-xl"><span>{f.fulfillment === 'delivery' ? 'الإجمالي (بدون التوصيل)' : 'الإجمالي'}</span><strong className="text-copper-lt">{fmt(subtotal - disc)}</strong></p>
+        <p className="flex justify-between border-t border-line pt-3 text-xl"><span>{f.fulfillment === 'delivery' ? 'الإجمالي (بدون التوصيل)' : 'الإجمالي'}</span><strong className="text-brown">{fmt(subtotal - disc)}</strong></p>
         {lines.some((l) => l.is_custom) && <p className="text-xs text-muted">السعر النهائي للمنتجات المفصّلة يُحدَّد بعد مراجعة القياسات.</p>}
         <Turnstile onToken={onToken} resetKey={tsReset} />
         {err && <p className="text-sm text-danger" role="alert">{err}</p>}
