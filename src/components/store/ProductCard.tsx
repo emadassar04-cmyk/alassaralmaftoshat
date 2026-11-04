@@ -2,7 +2,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 import type { Product } from '@/lib/types'
-import { fmt, unitPrice } from '@/lib/format'
+import { fmt, unitPrice, unitSuffix } from '@/lib/format'
 import { QuickAdd } from './QuickAdd'
 
 export function ProductCard({ p, priority = false, level = 3 }: { p: Product; priority?: boolean; level?: 2 | 3 }) {
@@ -34,7 +34,7 @@ export function ProductCard({ p, priority = false, level = 3 }: { p: Product; pr
           {p.categories && <p className="text-xs text-muted">{p.categories.name}</p>}
           <H className="mt-1 text-[15.5px] font-medium leading-snug text-charcoal"><Link href={`/product/${p.slug}`} className="transition-colors hover:text-brown">{p.name}</Link></H>
           <p className="num mt-1.5 flex flex-wrap items-baseline gap-x-2 text-[15px]">
-            <span className="font-semibold text-brown">{ranged && <span className="text-xs font-normal text-ink-2">يبدأ من </span>}{fmt(from)}</span>
+            <span className="font-semibold text-brown">{ranged && !unitSuffix(p) && <span className="text-xs font-normal text-ink-2">يبدأ من </span>}{fmt(from)}{unitSuffix(p) && <span className="text-xs font-normal text-ink-2">{unitSuffix(p)}</span>}</span>
             {p.sale_price && !p.is_custom && <s className="text-sm text-muted">{fmt(p.base_price)}</s>}
           </p>
         </div>

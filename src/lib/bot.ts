@@ -35,7 +35,7 @@ const SYSTEM_RULES = `أنت مساعد مفروشات العصار على تل�
 - أجرة التوصيل ما بتنحسب بالموقع، بنتفق عليها على واتساب حسب المنطقة.
 - الأسعار كما ترجعها الأداة بالضبط: لا تضف وحدة (للمتر، للقطعة…) ولا رقماً غير موجود في النتيجة. إذا ما في وحدة قل «يبدأ من X ₪» وإن السعر النهائي حسب المقاس.
 - الأقسام عندنا فقط: وجه فرشات، مخدات، شراشف، ستائر، فرشات إسفنج، كنب عربي، فرش عربي، باطنة. لا تذكر منتجات أو أقسام غيرها.
-- إذا أعطاك الزبون مقاساً لمنتج تفصيل، اطلب منه يكمّل الطلب من صفحة التفصيل أو حوّله لموظف لتسعيره، ولا تحسب سعراً نهائياً بنفسك.
+- إذا أعطاك الزبون مقاساً لمنتج تفصيل: إذا نتيجة get_products فيها pricing احسب السعر بالضبط حسب المعادلة المكتوبة واذكر الحساب (مثال 4×4×13 = 208 ₪) ووجّهه لصفحة التفصيل ليكمل الطلب. إذا ما في pricing لا تحسب سعراً نهائياً، وجّهه لصفحة التفصيل أو حوّله لموظف.
 - اكتب بالعربي فقط بدون كلمات أو حروف إنجليزية (ما عدا الروابط).
 
 حوّل لموظف باستعمال handoff_to_human إذا: طلب الزبون يحكي مع حدا، أو عنده شكوى أو مشكلة بطلب، أو بدّه سعر خاص أو خصم، أو سؤال ما بتقدر تجاوبه من المعلومات المتوفرة. بعد التحويل قول للزبون إنه موظف رح يرد عليه قريباً.
@@ -63,7 +63,7 @@ export async function runTool(name: string, input: Record<string, string>, conve
     const all = await getProducts()
     const hit = all.filter((p) => !q || p.name.includes(q) || (p.categories?.name ?? '').includes(q) || (p.description ?? '').includes(q))
     const list = (hit.length ? hit : all).slice(0, 15).map((p) => ({
-      name: p.name, category: p.categories?.name, custom_made: p.is_custom, price_from: Math.min(...(p.product_variants.length ? p.product_variants.map((v) => unitPrice(p, v)) : [unitPrice(p)])),
+      name: p.name, category: p.categories?.name, custom_made: p.is_custom, ...(p.is_custom && p.measurement_schema?.pricing?.type === 'area' ? { pricing: `السعر = ${unitPrice(p)} ₪ للمتر المربع × الطول (متر) × العرض (متر). مثال 4×4 = ${unitPrice(p) * 16} ₪` } : {}), price_from: Math.min(...(p.product_variants.length ? p.product_variants.map((v) => unitPrice(p, v)) : [unitPrice(p)])),
       on_sale: p.sale_price !== null, regular_price: p.base_price, in_stock: p.is_custom || p.product_variants.length === 0 || p.product_variants.some((v) => v.stock > 0),
       options: p.product_variants.map((v) => `${v.label}: ${unitPrice(p, v)} ₪${!p.is_custom && v.stock <= 0 ? ' (غير متوفر)' : ''}`), url: `${SITE}/product/${p.slug}`,
     }))

@@ -2,6 +2,20 @@ import type { CartLine, PaymentMethod, TrackedOrder } from './types'
 
 export const fmt = (n: number) => `${Number(n).toLocaleString('en-US', { maximumFractionDigits: 2 })} ₪`
 export const unitPrice = (p: { base_price: number; sale_price: number | null }, v?: { price: number | null } | null) => v?.price ?? p.sale_price ?? p.base_price
+/** Mirrors app_private.item_price() for display only; the server recomputes the real price. */
+const num = (s?: string) => { if (!s) return NaN; const t = s.trim().replace(/[٠-٩]/g, (d) => String('٠١٢٣٤٥٦٧٨٩'.indexOf(d))).replace(/[٫,]/g, '.'); return /^\d+(\.\d+)?$/.test(t) ? Number(t) : NaN }
+export function areaPricing(p: { is_custom: boolean; measurement_schema: { pricing?: { type: string } } | null }) { return p.is_custom && p.measurement_schema?.pricing?.type === 'area' }
+export const unitSuffix = (p: Parameters<typeof areaPricing>[0]) => (areaPricing(p) ? ' للمتر المربع' : '')
+export function measuredPrice(p: { base_price: number; sale_price: number | null; is_custom: boolean; measurement_schema: import('./types').MeasurementSchema | null }, v: { price: number | null } | null, meas: Record<string, string>) {
+  const rate = unitPrice(p, v); const pr = p.measurement_schema?.pricing
+  if (!p.is_custom || !pr || pr.type !== 'area') return { price: rate, rate, area: null as number | null }
+  const lbl = (k: string) => p.measurement_schema!.fields.find((f) => f.key === k)?.label ?? ''
+  const k = pr.unit === 'cm' ? 0.01 : 1
+  const l = num(meas[lbl(pr.length)]) * k, w = num(meas[lbl(pr.width)]) * k
+  if (!(l > 0 && w > 0 && l <= 30 && w <= 30)) return { price: null as number | null, rate, area: null }
+  const area = l * w
+  return { price: Math.round(rate * area * 100) / 100, rate, area, l, w }
+}
 export const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://alassaralmaftoshat.vercel.app'
 export const waLink = (phone: string | null | undefined, text = '') => `https://wa.me/${(phone ?? '').replace(/\D/g, '')}${text ? `?text=${encodeURIComponent(text)}` : ''}`
 

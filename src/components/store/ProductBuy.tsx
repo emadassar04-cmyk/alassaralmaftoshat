@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Check, Share2 } from 'lucide-react'
 import type { Product } from '@/lib/types'
 import { useCart } from '@/lib/cart'
-import { fmt, unitPrice, waLink } from '@/lib/format'
+import { fmt, unitPrice, unitSuffix, waLink } from '@/lib/format'
 import { track } from '@/lib/pixel'
 import Link from 'next/link'
 
@@ -23,7 +23,7 @@ export function ProductBuy({ p, image, waPhone }: { p: Product; image: string | 
   }
   return (
     <div className="space-y-5">
-      <div className="flex items-baseline gap-3"><span className="num font-display text-[2.2rem] font-light text-charcoal">{p.is_custom && <span className="text-base text-ink-2">يبدأ من </span>}{fmt(price)}</span>
+      <div className="flex items-baseline gap-3"><span className="num font-display text-[2.2rem] font-light text-charcoal">{p.is_custom && !unitSuffix(p) && <span className="text-base text-ink-2">يبدأ من </span>}{fmt(price)}{unitSuffix(p) && <span className="text-base text-ink-2">{unitSuffix(p)}</span>}</span>
         {p.sale_price && !v?.price && <><s className="num text-muted">{fmt(p.base_price)}</s><span className="chip bg-brown text-white">عرض</span></>}</div>
       {p.is_custom && <p className="rounded-[var(--radius-md)] bg-sand px-4 py-3 text-sm text-ink-2">السعر النهائي يُحدَّد حسب المقاس والقماش، ونؤكده معك قبل التنفيذ.</p>}
       {variants.length > 0 && (
