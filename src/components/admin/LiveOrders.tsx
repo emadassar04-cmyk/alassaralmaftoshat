@@ -15,5 +15,5 @@ export function LiveOrders() {
     return () => { void sb.removeChannel(ch) }
   }, [router])
   if (!toast) return null
-  return <div role="status" className="fixed start-4 top-4 z-50 rounded-lg bg-[#8f6a2e] px-4 py-3 text-white shadow-lg">🔔 {toast}</div>
+  return <div role="status" className="fixed start-4 top-4 z-50 rounded-lg bg-[var(--a-copper)] px-4 py-3 text-white shadow-lg">🔔 {toast}</div>
 }

@@ -22,7 +22,7 @@ export default async function Conversations(props: PageProps<'/admin/conversatio
         <label className="a-lbl">القناة<select name="channel" defaultValue={v('channel')} className="a-field mt-1"><option value="">الكل</option><option value="telegram">تليجرام</option><option value="whatsapp">واتساب</option></select></label><button className="a-btn a-btn-solid">تطبيق</button><Link href="/admin/conversations" className="a-btn">مسح</Link></form>
       <div className="a-card a-scroll !p-0"><table className="a-table"><thead><tr><th>القناة</th><th>الزبون</th><th>آخر رسالة</th><th>الوقت</th></tr></thead><tbody>
         {convs?.map((c) => <tr key={c.id}><td><span className={`a-pill ${c.channel === 'telegram' ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800'}`}>{c.channel === 'telegram' ? 'تليجرام' : 'واتساب'}</span></td>
-          <td><Link href={`/admin/conversations/${c.id}`} className="font-medium text-[#8f6a2e] underline">{c.customer_name ?? c.external_id}</Link>{c.phone && <p dir="ltr" className="a-muted text-end">{c.phone}</p>}</td>
+          <td><Link href={`/admin/conversations/${c.id}`} className="font-medium text-[var(--a-copper)] underline">{c.customer_name ?? c.external_id}</Link>{c.phone && <p dir="ltr" className="a-muted text-end">{c.phone}</p>}</td>
           <td className="max-w-md truncate">{last.get(c.id) ? `${last.get(c.id)!.role === 'bot' ? '🤖 ' : ''}${last.get(c.id)!.body}` : '—'}</td><td className="whitespace-nowrap">{dt(c.last_message_at)}</td></tr>)}
         {!convs?.length && <tr><td colSpan={4} className="a-muted py-10 text-center">لا محادثات بعد</td></tr>}</tbody></table></div>
     </>

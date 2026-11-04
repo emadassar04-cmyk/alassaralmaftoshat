@@ -88,12 +88,12 @@ export function ProductForm({ product, categories, canDelete }: { product: FormP
       </section>
 
       <section className="a-card space-y-3"><h2 className="font-semibold">الصور <span className="a-muted">(حتى 12، الأولى هي الرئيسية، وتُصغَّر تلقائياً لتوفير الإنترنت)</span></h2>
-        <label ref={drop} onDragOver={(e) => { e.preventDefault(); drop.current?.classList.add('bg-[#f1e7d2]') }} onDragLeave={() => drop.current?.classList.remove('bg-[#f1e7d2]')}
-          onDrop={(e) => { e.preventDefault(); drop.current?.classList.remove('bg-[#f1e7d2]'); void upload(e.dataTransfer.files) }}
+        <label ref={drop} onDragOver={(e) => { e.preventDefault(); drop.current?.classList.add('bg-[var(--a-sand)]') }} onDragLeave={() => drop.current?.classList.remove('bg-[var(--a-sand)]')}
+          onDrop={(e) => { e.preventDefault(); drop.current?.classList.remove('bg-[var(--a-sand)]'); void upload(e.dataTransfer.files) }}
           className="grid cursor-pointer place-items-center rounded-lg border-2 border-dashed border-[var(--a-line)] p-6 text-center text-sm text-[var(--a-mute)]">
           {busy ? 'جارٍ الرفع...' : 'اسحب الصور هنا أو اضغط للاختيار'}<input type="file" accept="image/*" multiple className="sr-only" disabled={busy || images.length >= 12} onChange={(e) => e.target.files && void upload(e.target.files)} /></label>
         <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">{images.map((im, i) => (
-          <li key={im.url} className="space-y-1 rounded-lg border border-[var(--a-line)] p-2"><div className="relative aspect-square overflow-hidden rounded"><Image src={im.url} alt={im.alt} fill sizes="160px" className="object-cover" />{i === 0 && <span className="a-pill absolute start-1 top-1 bg-[#8f6a2e] text-white">رئيسية</span>}</div>
+          <li key={im.url} className="space-y-1 rounded-lg border border-[var(--a-line)] p-2"><div className="relative aspect-square overflow-hidden rounded"><Image src={im.url} alt={im.alt} fill sizes="160px" className="object-cover" />{i === 0 && <span className="a-pill absolute start-1 top-1 bg-[var(--a-copper)] text-white">رئيسية</span>}</div>
             <div className="flex justify-between gap-1"><button type="button" className="a-btn !min-h-8 !px-2" aria-label="تقديم" onClick={() => setImages((a) => move(a, i, -1))}>→</button><button type="button" className="a-btn !min-h-8 !px-2" aria-label="تأخير" onClick={() => setImages((a) => move(a, i, 1))}>←</button>
               <button type="button" className="a-btn a-btn-danger !min-h-8 !px-2" aria-label="حذف الصورة" onClick={() => setImages((a) => a.filter((_, j) => j !== i))}>✕</button></div></li>))}</ul></section>
 
@@ -124,7 +124,7 @@ export function ProductForm({ product, categories, canDelete }: { product: FormP
                   <button type="button" className="a-btn a-btn-danger !px-2" aria-label="حذف الحقل" onClick={() => setSchema((s) => ({ ...s, fields: s.fields.filter((_, j) => j !== i) }))}>✕</button></div>
                 {fl.showIf && <p className="a-muted md:col-span-5">⚙ حقل مشروط (يظهر عند اختيار معيّن)، يُعدَّل من وضع JSON المتقدم.</p>}</li>))}</ul>
             <button type="button" className="a-btn" onClick={() => setSchema((s) => ({ ...s, fields: [...s.fields, { key: `f${Date.now().toString(36)}`, label: '', type: 'number' }] }))}>+ حقل قياس</button>
-            <div className="space-y-2 rounded-lg border border-[var(--a-line)] bg-[#faf4e8] p-3">
+            <div className="space-y-2 rounded-lg border border-[var(--a-line)] bg-[#fcfaf6] p-3">
               <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={!!schema.pricing} onChange={(e) => {
                 const nums = schema.fields.filter((x) => x.type === 'number')
                 setSchema((s) => ({ ...s, pricing: e.target.checked ? { type: 'area', length: nums[0]?.key ?? '', width: nums[1]?.key ?? '', unit: 'm' } : undefined }))

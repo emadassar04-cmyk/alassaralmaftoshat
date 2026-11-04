@@ -39,7 +39,7 @@ export default async function Orders(props: PageProps<'/admin/orders'>) {
         <div className="flex gap-2 sm:col-span-2 lg:col-span-6"><button className="a-btn a-btn-solid">تطبيق</button><Link href="/admin/orders" className="a-btn">مسح</Link><span className="a-muted self-center">{count ?? 0} طلب</span></div>
       </form>
       <div className="a-card a-scroll !p-0"><table className="a-table"><thead><tr><th>الطلب</th><th>الزبون</th><th>الجوال</th><th>الفرع</th><th>الاستلام</th><th>الدفع</th><th>الحالة</th><th>الإجمالي</th><th>الوقت</th></tr></thead><tbody>
-        {rows?.map((o) => <tr key={o.id}><td><Link className="font-semibold text-[#8f6a2e] underline" href={`/admin/orders/${o.id}`}>{o.number}</Link></td><td>{o.customer_name}</td><td dir="ltr" className="whitespace-nowrap">{o.phone}</td>
+        {rows?.map((o) => <tr key={o.id}><td><Link className="font-semibold text-[var(--a-copper)] underline" href={`/admin/orders/${o.id}`}>{o.number}</Link></td><td>{o.customer_name}</td><td dir="ltr" className="whitespace-nowrap">{o.phone}</td>
           <td>{(o.branches as unknown as { name: string } | null)?.name}</td><td>{o.fulfillment === 'pickup' ? 'من الفرع' : 'توصيل'}</td><td>{PAYMENT_AR[o.payment_method]}</td>
           <td><span className={`a-pill ${STATUS_TONE[o.status]}`}>{STATUS_AR[o.status]}</span></td><td className="whitespace-nowrap">{fmt(o.total)}</td><td className="whitespace-nowrap">{dt(o.created_at)}</td></tr>)}
         {!rows?.length && <tr><td colSpan={9} className="a-muted py-10 text-center">لا توجد طلبات مطابقة</td></tr>}</tbody></table></div>

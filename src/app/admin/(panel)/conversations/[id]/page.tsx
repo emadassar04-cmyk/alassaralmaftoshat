@@ -25,7 +25,7 @@ export default async function Conversation(props: PageProps<'/admin/conversation
       <section className="a-card space-y-3" aria-label="الرسائل">
         {msgs?.map((m) => (
           <div key={m.id} className={`flex ${m.role === 'bot' ? 'justify-start' : 'justify-end'}`}>
-            <div className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm ${m.role === 'bot' ? 'rounded-es-sm bg-[#e8f3e6]' : 'rounded-ee-sm bg-[#f1e7d2]'}`}>
+            <div className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-4 py-2 text-sm ${m.role === 'bot' ? 'rounded-es-sm bg-[#e8f3e6]' : 'rounded-ee-sm bg-[var(--a-sand)]'}`}>
               <p className="mb-0.5 text-[10px] font-semibold text-[var(--a-mute)]">{m.role === 'bot' ? (m.author === 'human' ? '👤 أنت' : '🤖 البوت') : (c.customer_name ?? 'الزبون')}</p>{m.body}<p className="mt-1 text-[10px] text-[var(--a-mute)]">{dt(m.sent_at)}</p></div></div>))}
         {!msgs?.length && <p className="a-muted py-8 text-center">لا رسائل</p>}</section>
       {c.channel === 'telegram' && (

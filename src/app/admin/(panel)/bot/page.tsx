@@ -58,7 +58,7 @@ export default async function BotPage() {
 
       <section className="a-card a-scroll space-y-3"><h2 className="font-semibold">المحادثات</h2>
         <table className="a-table"><thead><tr><th>الزبون</th><th>من يرد</th><th>آخر رسالة</th><th></th></tr></thead><tbody>
-          {list?.map((c) => <tr key={c.id}><td><Link href={`/admin/conversations/${c.id}`} className="font-medium text-[#8f6a2e] underline">{c.customer_name ?? c.external_id}</Link>{c.needs_human && <span className="a-pill ms-2 bg-rose-100 text-rose-800">ينتظر رداً</span>}</td>
+          {list?.map((c) => <tr key={c.id}><td><Link href={`/admin/conversations/${c.id}`} className="font-medium text-[var(--a-copper)] underline">{c.customer_name ?? c.external_id}</Link>{c.needs_human && <span className="a-pill ms-2 bg-rose-100 text-rose-800">ينتظر رداً</span>}</td>
             <td>{c.handled_by === 'human' ? '👤 أنت' : '🤖 البوت'}</td><td className="whitespace-nowrap">{dt(c.last_message_at)}</td>
             <td><form action={setHandledBy}><input type="hidden" name="id" value={c.id} /><input type="hidden" name="to" value={c.handled_by === 'human' ? 'bot' : 'human'} /><button className="a-btn !min-h-8">{c.handled_by === 'human' ? 'إرجاع للبوت' : 'استلام'}</button></form></td></tr>)}
           {!list?.length && <tr><td colSpan={4} className="a-muted py-8 text-center">لا محادثات بعد</td></tr>}</tbody></table></section>

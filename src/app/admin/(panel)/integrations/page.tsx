@@ -34,7 +34,7 @@ export default async function Integrations() {
       <FacebookCard badge={bad(!!c(fb).page_url || !!st?.value, 'مضبوط')} pageUrl={c(fb).page_url ?? ''} pixel={typeof st?.value === 'string' ? st.value : ''} />
       <GmailCard badge={bad(!!c(gm).email, 'مضبوط')} email={c(gm).email ?? ''} />
       <section className="a-card a-scroll space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-display text-2xl text-[#8f6a2e]">سجل الأحداث المرسلة (n8n وتليجرام)</h2>{failed > 0 && <RetryAll />}</div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-display text-2xl text-[var(--a-copper)]">سجل الأحداث المرسلة (n8n وتليجرام)</h2>{failed > 0 && <RetryAll />}</div>
         <table className="a-table"><thead><tr><th>الحدث</th><th>الوجهة</th><th>الحالة</th><th>المحاولات</th><th>HTTP</th><th>الوقت</th><th></th></tr></thead><tbody>
           {logs?.map((l) => <tr key={l.id}><td dir="ltr" className="text-end font-mono">{l.event}</td><td>{l.target === 'telegram' ? 'تليجرام' : 'n8n'}</td><td><span className={`a-pill ${TONE[l.status]}`}>{STAT[l.status]}</span>{l.error && <p className="a-muted mt-1">{l.error}</p>}</td><td>{l.attempts}</td><td dir="ltr" className="text-end">{l.http_status ?? '—'}</td><td className="whitespace-nowrap">{dt(l.created_at)}</td>
             <td>{l.status !== 'sent' && <form action={resendWebhook}><input type="hidden" name="id" value={l.id} /><button className="a-btn !min-h-8">إعادة إرسال</button></form>}</td></tr>)}
