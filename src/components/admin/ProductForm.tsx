@@ -1,4 +1,5 @@
 'use client'
+import { toWebp } from '@/lib/image'
 import { useRef, useState, useTransition } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
@@ -11,24 +12,21 @@ type Img = { id: string | null; url: string; alt: string }
 export type FormProduct = {
   id: string; name: string; slug: string; description: string | null; category_id: string | null; base_price: number; sale_price: number | null
   is_custom: boolean; is_bestseller: boolean; status: 'visible' | 'hidden'; sort: number; measurement_schema: MeasurementSchema | null
+  is_featured?: boolean; stock?: number | null; sale_starts_at?: string | null; sale_ends_at?: string | null
   product_variants: { id: string; label: string; color: string | null; size: string | null; fabric: string | null; price: number | null; stock: number; is_active: boolean }[]
   product_images: { id: string; url: string; alt: string | null }[]
 }
 
+/** ISO -> value for <input type=datetime-local> in the browser's time zone. */
+const toLocal = (iso?: string | null) => { if (!iso) return ''; const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16) }
 const slugify = (s: string) => s.trim().toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 80)
 
-async function toWebp(file: File, max = 1600): Promise<Blob> {
-  const bmp = await createImageBitmap(file)
-  const k = Math.min(1, max / Math.max(bmp.width, bmp.height))
-  const c = document.createElement('canvas'); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k)
-  c.getContext('2d')!.drawImage(bmp, 0, 0, c.width, c.height)
-  return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error('encode'))), 'image/webp', 0.82))
-}
 
 export function ProductForm({ product, categories, canDelete }: { product: FormProduct | null; categories: { id: string; name: string }[]; canDelete: boolean }) {
   const router = useRouter(); const [pending, start] = useTransition()
   const [f, setF] = useState({ name: product?.name ?? '', slug: product?.slug ?? '', description: product?.description ?? '', category_id: product?.category_id ?? '', base_price: String(product?.base_price ?? ''),
-    sale_price: product?.sale_price != null ? String(product.sale_price) : '', is_custom: product?.is_custom ?? false, is_bestseller: product?.is_bestseller ?? false, status: product?.status ?? 'visible', sort: String(product?.sort ?? 100) })
+    sale_price: product?.sale_price != null ? String(product.sale_price) : '', is_custom: product?.is_custom ?? false, is_bestseller: product?.is_bestseller ?? false, status: product?.status ?? 'visible', sort: String(product?.sort ?? 100),
+    is_featured: product?.is_featured ?? false, stock: product?.stock != null ? String(product.stock) : '', sale_starts_at: toLocal(product?.sale_starts_at), sale_ends_at: toLocal(product?.sale_ends_at) })
   const [variants, setVariants] = useState<Variant[]>(product?.product_variants.map((v) => ({ id: v.id, label: v.label, color: v.color ?? '', size: v.size ?? '', fabric: v.fabric ?? '', price: v.price != null ? String(v.price) : '', stock: String(v.stock), is_active: v.is_active })) ?? [])
   const [images, setImages] = useState<Img[]>(product?.product_images.map((i) => ({ id: i.id, url: i.url, alt: i.alt ?? '' })) ?? [])
   const [schema, setSchema] = useState<MeasurementSchema>(product?.measurement_schema ?? { fields: [] })
@@ -59,6 +57,8 @@ export function ProductForm({ product, categories, canDelete }: { product: FormP
     const payload: ProductPayload = {
       id: product?.id ?? null, name: f.name, slug: f.slug || slugify(f.name), description: f.description, category_id: f.category_id || null,
       base_price: Number(f.base_price), sale_price: f.sale_price === '' ? null : Number(f.sale_price), is_custom: f.is_custom, is_bestseller: f.is_bestseller, status: f.status, sort: Number(f.sort) || 0,
+      is_featured: f.is_featured, stock: f.is_custom || variants.length || f.stock.trim() === '' ? null : Math.max(0, Math.floor(Number(f.stock) || 0)),
+      sale_starts_at: f.sale_price && f.sale_starts_at ? new Date(f.sale_starts_at).toISOString() : null, sale_ends_at: f.sale_price && f.sale_ends_at ? new Date(f.sale_ends_at).toISOString() : null,
       measurement_schema: ms,
       variants: variants.map((v, i) => ({ id: v.id, label: v.label, color: v.color, size: v.size, fabric: v.fabric, price: v.price === '' ? null : Number(v.price), stock: Math.max(0, Math.floor(Number(v.stock) || 0)), is_active: v.is_active, sort: i })),
       images: images.map((i) => ({ id: i.id, url: i.url, alt: i.alt })),
@@ -81,9 +81,14 @@ export function ProductForm({ product, categories, canDelete }: { product: FormP
         <label className="a-lbl md:col-span-2">الوصف<textarea className="a-field mt-1 min-h-24" value={f.description} onChange={(e) => set('description', e.target.value)} /></label>
         <label className="a-lbl">السعر الأساسي ₪<input required inputMode="decimal" dir="ltr" className="a-field mt-1" value={f.base_price} onChange={(e) => set('base_price', e.target.value)} /></label>
         <label className="a-lbl">سعر العرض ₪ (اتركه فارغاً بدون عرض)<input inputMode="decimal" dir="ltr" className="a-field mt-1" value={f.sale_price} onChange={(e) => set('sale_price', e.target.value)} /></label>
+        {f.sale_price !== '' && <>
+          <label className="a-lbl">بداية العرض (اختياري)<input type="datetime-local" dir="ltr" className="a-field mt-1" value={f.sale_starts_at} onChange={(e) => set('sale_starts_at', e.target.value)} /></label>
+          <label className="a-lbl">نهاية العرض (اختياري، ينتهي تلقائياً)<input type="datetime-local" dir="ltr" className="a-field mt-1" value={f.sale_ends_at} onChange={(e) => set('sale_ends_at', e.target.value)} /></label></>}
+        {!f.is_custom && variants.length === 0 && <label className="a-lbl">الكمية المتوفرة (اتركها فارغة = بدون متابعة مخزون)<input inputMode="numeric" dir="ltr" className="a-field mt-1" placeholder="مثال: 20" value={f.stock} onChange={(e) => set('stock', e.target.value.replace(/\D/g, ''))} /></label>}
         <label className="a-lbl">الحالة<select className="a-field mt-1" value={f.status} onChange={(e) => set('status', e.target.value as 'visible')}><option value="visible">ظاهر في المتجر</option><option value="hidden">مخفي</option></select></label>
         <label className="a-lbl">الترتيب (الأصغر أولاً)<input inputMode="numeric" dir="ltr" className="a-field mt-1" value={f.sort} onChange={(e) => set('sort', e.target.value)} /></label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.is_bestseller} onChange={(e) => set('is_bestseller', e.target.checked)} className="h-4 w-4" />يظهر في «الأكثر مبيعاً»</label>
+        <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.is_featured} onChange={(e) => set('is_featured', e.target.checked)} className="h-4 w-4" />منتج مميز (قسم «منتجات مميزة» بالرئيسية)</label>
         <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.is_custom} onChange={(e) => set('is_custom', e.target.checked)} className="h-4 w-4" />منتج تفصيل (حسب القياس، بدون مخزون)</label>
       </section>
 

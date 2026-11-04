@@ -15,6 +15,8 @@ const Payload = z.object({
   description: z.string().max(4000).default(''), category_id: z.string().uuid().nullable(),
   base_price: num.min(0).max(1000000), sale_price: num.min(0).max(1000000).nullable(),
   is_custom: z.boolean(), is_bestseller: z.boolean(), status: z.enum(['visible', 'hidden']), sort: z.number().int().min(0).max(9999),
+  is_featured: z.boolean().default(false), stock: z.number().int().min(0).max(100000).nullable().default(null),
+  sale_starts_at: z.string().datetime().nullable().default(null), sale_ends_at: z.string().datetime().nullable().default(null),
   measurement_schema: z.object({ diagram: z.enum(['curtains', 'majlis', 'batana']).optional(), fields: z.array(Field).max(30),
     pricing: z.object({ type: z.literal('area'), length: z.string().min(1).max(40), width: z.string().min(1).max(40), unit: z.enum(['m', 'cm']).default('m') }).optional() }).nullable(),
   variants: z.array(z.object({ id: z.string().uuid().nullable(), label: z.string().min(1).max(100), color: z.string().max(40).default(''), size: z.string().max(40).default(''), fabric: z.string().max(60).default(''),
@@ -30,13 +32,16 @@ export async function saveProduct(raw: unknown): Promise<R> {
   if (!p.success) return { error: p.error.issues[0]?.message ?? 'بيانات غير صحيحة' }
   const d = p.data
   if (d.sale_price !== null && d.sale_price >= d.base_price) return { error: 'سعر العرض يجب أن يكون أقل من السعر الأساسي' }
+  if (d.sale_starts_at && d.sale_ends_at && Date.parse(d.sale_starts_at) >= Date.parse(d.sale_ends_at)) return { error: 'نهاية العرض يجب أن تكون بعد بدايته' }
   const pr = d.measurement_schema?.pricing
   if (d.is_custom && pr) {
     const f = (k: string) => d.measurement_schema!.fields.find((x) => x.key === k)
     if (!f(pr.length) || !f(pr.width) || pr.length === pr.width || f(pr.length)!.type !== 'number' || f(pr.width)!.type !== 'number') return { error: 'التسعير بالمساحة: اختر حقلين رقميين مختلفين للطول والعرض' }
   }
   const row = { name: d.name, slug: d.slug, description: d.description, category_id: d.category_id, base_price: d.base_price, sale_price: d.sale_price,
-    is_custom: d.is_custom, is_bestseller: d.is_bestseller, status: d.status, sort: d.sort, measurement_schema: d.is_custom ? d.measurement_schema : null }
+    is_custom: d.is_custom, is_bestseller: d.is_bestseller, status: d.status, sort: d.sort, measurement_schema: d.is_custom ? d.measurement_schema : null,
+    is_featured: d.is_featured, stock: d.is_custom || d.variants.length ? null : d.stock,
+    sale_starts_at: d.sale_price === null ? null : d.sale_starts_at, sale_ends_at: d.sale_price === null ? null : d.sale_ends_at }
   let id = d.id
   if (id) { const { error } = await sb.from('products').update(row).eq('id', id); if (error) return { error: error.code === '23505' ? 'هذا الرابط مستخدم لمنتج آخر' : 'تعذّر حفظ المنتج' } }
   else { const { data, error } = await sb.from('products').insert(row).select('id').single(); if (error || !data) return { error: error?.code === '23505' ? 'هذا الرابط مستخدم لمنتج آخر' : 'تعذّر إنشاء المنتج' }; id = data.id }

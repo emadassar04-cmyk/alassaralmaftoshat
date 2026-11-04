@@ -2,6 +2,7 @@
 import { useActionState, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { createCoupon, saveBranch, savePost, saveSetting, setStaffRole } from '@/app/admin/misc-actions'
+import { ImageField } from './ImageField'
 
 const Msg = ({ s }: { s?: { ok?: boolean; error?: string } }) => s?.error ? <p role="alert" className="rounded-md bg-rose-50 p-2 text-sm text-rose-800">{s.error}</p> : s?.ok ? <p role="status" className="rounded-md bg-emerald-50 p-2 text-sm text-emerald-800">تم الحفظ</p> : null
 
@@ -77,13 +78,25 @@ function SettingShell({ title, k, value, children, hint }: { title: string; k: s
     </form>
   )
 }
-export function HomeSettings({ v }: { v: { headline: string; tagline: string; badge: string; testimonials_title?: string } }) {
-  const [f, setF] = useState({ ...v, testimonials_title: v.testimonials_title ?? '' })
-  return <SettingShell title="نصوص الصفحة الرئيسية" k="home" value={() => f}>
+export type HomeValue = { headline: string; tagline: string; badge: string; testimonials_title?: string; hero_title?: string; hero_text?: string; hero_image?: string; story_text?: string }
+export function HomeSettings({ v }: { v: HomeValue }) {
+  const [f, setF] = useState({ ...v, testimonials_title: v.testimonials_title ?? '', hero_title: v.hero_title ?? '', hero_text: v.hero_text ?? '', hero_image: v.hero_image ?? '', story_text: v.story_text ?? '' })
+  return <SettingShell title="الصفحة الرئيسية" k="home" value={() => f} hint="اترك أي حقل فارغاً لاستعمال النص الافتراضي.">
+    <label className="a-lbl">عنوان الواجهة الكبير<input className="a-field mt-1" value={f.hero_title} placeholder="منذ 1996… نصنع تفاصيل الراحة في منزلك" onChange={(e) => setF({ ...f, hero_title: e.target.value })} /></label>
+    <label className="a-lbl">وصف الواجهة<textarea className="a-field mt-1 min-h-20" value={f.hero_text} placeholder="مفروشات تجمع بين جودة الاختيار، جمال التفاصيل، والتفصيل الذي يناسب مساحتك." onChange={(e) => setF({ ...f, hero_text: e.target.value })} /></label>
+    <ImageField label="صورة الواجهة (يفضّل أفقية، 1600 بكسل أو أكثر)" folder="site" value={f.hero_image} onChange={(u) => setF({ ...f, hero_image: u })} />
+    <label className="a-lbl">فقرة «قصة العصار»<textarea className="a-field mt-1 min-h-24" value={f.story_text} placeholder="بدأت الحكاية في دير البلح بمحل صغير وثقة كبيرة…" onChange={(e) => setF({ ...f, story_text: e.target.value })} /></label>
     <label className="a-lbl">العنوان الرئيسي<input className="a-field mt-1" value={f.headline} onChange={(e) => setF({ ...f, headline: e.target.value })} /></label>
     <label className="a-lbl">الشعار<input className="a-field mt-1" value={f.tagline} onChange={(e) => setF({ ...f, tagline: e.target.value })} /></label>
     <label className="a-lbl">الشارة تحت الشعار<input className="a-field mt-1" value={f.badge} onChange={(e) => setF({ ...f, badge: e.target.value })} /></label>
     <label className="a-lbl">عنوان قسم الآراء (اتركه فارغاً = «آراء زبائننا»)<input className="a-field mt-1" value={f.testimonials_title} placeholder="آراء زبائننا" onChange={(e) => setF({ ...f, testimonials_title: e.target.value })} /></label></SettingShell>
+}
+export type Social = { facebook?: string; instagram?: string; tiktok?: string; youtube?: string }
+export function SocialSettings({ v }: { v: Social }) {
+  const [f, setF] = useState({ facebook: v.facebook ?? '', instagram: v.instagram ?? '', tiktok: v.tiktok ?? '', youtube: v.youtube ?? '' })
+  const L: [keyof typeof f, string][] = [['facebook', 'فيسبوك'], ['instagram', 'إنستغرام'], ['tiktok', 'تيك توك'], ['youtube', 'يوتيوب']]
+  return <SettingShell title="روابط التواصل الاجتماعي" k="social" value={() => f} hint="الرابط الكامل للصفحة (يبدأ بـ https://). الفارغ لا يظهر.">
+    <div className="grid gap-2 sm:grid-cols-2">{L.map(([k, n]) => <label key={k} className="a-lbl">{n}<input dir="ltr" className="a-field mt-1" placeholder="https://" value={f[k]} onChange={(e) => setF({ ...f, [k]: e.target.value.trim() })} /></label>)}</div></SettingShell>
 }
 export function PaymentSettings({ v }: { v: Record<string, { account: string; holder?: string }> }) {
   const names: Record<string, string> = { palpay: 'PalPay', jawwal_pay: 'جوال باي', bank_palestine: 'بنك فلسطين' }

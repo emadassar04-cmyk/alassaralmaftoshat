@@ -4,11 +4,12 @@ export type Field = {
 }
 export type AreaPricing = { type: 'area'; length: string; width: string; unit?: 'm' | 'cm' }
 export type MeasurementSchema = { diagram?: 'curtains' | 'majlis' | 'batana'; fields: Field[]; pricing?: AreaPricing }
-export type Category = { id: string; slug: string; name: string; description: string | null; image_url: string | null }
+export type Category = { id: string; slug: string; name: string; description: string | null; image_url: string | null; is_visible?: boolean }
 export type Variant = { id: string; product_id: string; label: string; color: string | null; size: string | null; fabric: string | null; price: number | null; stock: number }
 export type Product = {
   id: string; slug: string; name: string; description: string | null; category_id: string | null
   base_price: number; sale_price: number | null; is_custom: boolean; is_bestseller: boolean
+  is_featured?: boolean; stock?: number | null; sale_starts_at?: string | null; sale_ends_at?: string | null; created_at?: string
   measurement_schema: MeasurementSchema | null
   product_images: { url: string; alt: string | null; sort: number }[]
   product_variants: Variant[]

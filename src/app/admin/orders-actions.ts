@@ -8,6 +8,15 @@ import { dispatchPending } from '@/lib/webhooks'
 type R = { ok?: boolean; error?: string }
 const STATUSES = ['new', 'confirmed', 'ready', 'received', 'cancelled'] as const
 
+export async function saveOrderNote(_: R | undefined, fd: FormData): Promise<R> {
+  const { sb } = await requireStaff()
+  const id = z.string().uuid().safeParse(fd.get('id')); if (!id.success) return { error: 'طلب غير صحيح' }
+  const note = String(fd.get('note') ?? '').trim().slice(0, 2000)
+  const { error } = await sb.from('orders').update({ staff_notes: note || null }).eq('id', id.data)
+  if (error) return { error: 'تعذّر حفظ الملاحظة' }
+  revalidatePath(`/admin/orders/${id.data}`); return { ok: true }
+}
+
 export async function setOrderStatus(_: R | undefined, fd: FormData): Promise<R> {
   const { sb } = await requireStaff()
   const p = z.object({ id: z.string().uuid(), status: z.enum(STATUSES) }).safeParse({ id: fd.get('id'), status: fd.get('status') })

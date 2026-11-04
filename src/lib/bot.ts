@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { GoogleGenAI, type Content, type FunctionDeclaration, type Part } from '@google/genai'
 import { getBranches, getProducts, getSetting } from './data'
-import { PAYMENT_LABEL, SITE, unitPrice } from './format'
+import { PAYMENT_LABEL, SITE, inStock, unitPrice } from './format'
 import { serverRpc } from './supabase'
 
 const MODEL = 'claude-opus-5-5'
@@ -65,7 +65,7 @@ export async function runTool(name: string, input: Record<string, string>, conve
     const hit = all.filter((p) => !q || p.name.includes(q) || (p.categories?.name ?? '').includes(q) || (p.description ?? '').includes(q))
     const list = (hit.length ? hit : all).slice(0, 15).map((p) => ({
       name: p.name, category: p.categories?.name, custom_made: p.is_custom, ...(p.is_custom && p.measurement_schema?.pricing?.type === 'area' ? { pricing: `السعر = ${unitPrice(p)} ₪ للمتر المربع × الطول (متر) × العرض (متر). مثال 4×4 = ${unitPrice(p) * 16} ₪` } : {}), price_from: Math.min(...(p.product_variants.length ? p.product_variants.map((v) => unitPrice(p, v)) : [unitPrice(p)])),
-      on_sale: p.sale_price !== null, regular_price: p.base_price, in_stock: p.is_custom || p.product_variants.length === 0 || p.product_variants.some((v) => v.stock > 0),
+      on_sale: p.sale_price !== null, regular_price: p.base_price, in_stock: inStock(p), ...(p.sale_price && p.sale_ends_at ? { offer_ends: p.sale_ends_at.slice(0, 10) } : {}),
       options: p.product_variants.map((v) => `${v.label}: ${unitPrice(p, v)} ₪${!p.is_custom && v.stock <= 0 ? ' (غير متوفر)' : ''}`), url: `${SITE}/product/${p.slug}`,
     }))
     return JSON.stringify({ matched: hit.length, currency: 'ILS ₪', shop_url: `${SITE}/shop`, custom_url: `${SITE}/custom`, products: list })

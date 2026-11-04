@@ -18,6 +18,12 @@ export function measuredPrice(p: { base_price: number; sale_price: number | null
 }
 /** Route params arrive percent-encoded for non-ASCII slugs (e.g. Arabic); decode safely before querying the DB. */
 export const slugParam = (s: string) => { try { return decodeURIComponent(s).normalize('NFC') } catch { return s } }
+/** Availability: custom = always; with options = any option in stock; otherwise product stock (null = not tracked = available). */
+export function inStock(p: { is_custom: boolean; stock?: number | null; product_variants: { stock: number }[] }) {
+  if (p.is_custom) return true
+  if (p.product_variants.length) return p.product_variants.some((v) => v.stock > 0)
+  return p.stock == null || p.stock > 0
+}
 export const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://alassaralmaftoshat.vercel.app'
 export const waLink = (phone: string | null | undefined, text = '') => `https://wa.me/${(phone ?? '').replace(/\D/g, '')}${text ? `?text=${encodeURIComponent(text)}` : ''}`
 
@@ -27,13 +33,13 @@ export const PAYMENT_LABEL: Record<PaymentMethod, string> = {
 export const STATUS_LABEL = { new: 'جديد', confirmed: 'مؤكد', ready: 'جاهز', received: 'مستلم', cancelled: 'ملغي' } as const
 
 export function lineText(l: Pick<CartLine, 'name' | 'variant_label' | 'qty' | 'unit_price' | 'measurements'>) {
-  const m = l.measurements ? Object.entries(l.measurements).filter(([, v]) => v).map(([k, v]) => `${k}: ${v}`).join('، ') : ''
+  const m = l.measurements ? Object.entries(l.measurements).filter(([, v]) => v).map(([k, v]) => (k === 'صورة مرجعية' ? '📷 صورة مرفقة' : `${k}: ${v}`)).join('، ') : ''
   return `• ${l.name}${l.variant_label ? ` (${l.variant_label})` : ''} × ${l.qty} = ${fmt(l.unit_price * l.qty)}${m ? `\n   القياسات: ${m}` : ''}`
 }
 /** WhatsApp message built from DB truth (the tracked order), not from browser-side prices. */
 export function orderMessage(o: TrackedOrder, trackUrl: string, labels: Record<string, string> = {}) {
   const items = o.items.map((i) => {
-    const m = i.measurements ? Object.entries(i.measurements).filter(([, v]) => v).map(([k, v]) => `${labels[k] ?? k}: ${v}`).join('، ') : ''
+    const m = i.measurements ? Object.entries(i.measurements).filter(([, v]) => v).map(([k, v]) => (k === 'صورة مرجعية' ? '📷 صورة مرفقة' : `${labels[k] ?? k}: ${v}`)).join('، ') : ''
     return `• ${i.name}${i.variant ? ` (${i.variant})` : ''} × ${i.qty} = ${fmt(i.price * i.qty)}${m ? `\n   القياسات: ${m}` : ''}`
   }).join('\n')
   return [`مرحباً مفروشات العصار 👋`, `طلب جديد رقم *${o.number}*`, '', items, '',

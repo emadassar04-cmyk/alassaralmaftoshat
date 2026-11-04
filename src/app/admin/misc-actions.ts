@@ -75,7 +75,10 @@ export async function saveBranch(raw: unknown): Promise<R> {
   revalidatePath('/', 'layout'); revalidatePath('/admin/settings'); return { ok: true }
 }
 const Settings = {
-  home: z.object({ headline: z.string().min(2).max(60), tagline: z.string().min(2).max(80), badge: z.string().max(120), testimonials_title: z.string().max(60).optional() }),
+  home: z.object({ headline: z.string().min(2).max(60), tagline: z.string().min(2).max(80), badge: z.string().max(120), testimonials_title: z.string().max(60).optional(),
+    hero_title: z.string().max(90).optional(), hero_text: z.string().max(300).optional(), story_text: z.string().max(800).optional(),
+    hero_image: z.string().max(500).refine((v) => v === '' || /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\//.test(v), 'صورة غير صالحة').optional() }),
+  social: z.object(Object.fromEntries(['facebook', 'instagram', 'tiktok', 'youtube'].map((k) => [k, z.string().max(300).refine((v) => v === '' || /^https:\/\//.test(v), 'الرابط يجب أن يبدأ بـ https://').default('')]))),
   payment_accounts: z.record(z.string(), z.object({ account: z.string().max(80), holder: z.string().max(80).default('') })),
   meta_pixel_id: z.string().regex(/^(\d{5,20})?$/, 'رقم Pixel أرقام فقط'),
   testimonials: z.array(z.object({ name: z.string().min(1).max(60), text: z.string().min(1).max(300), place: z.string().max(60).default('') })).max(12),

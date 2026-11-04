@@ -28,7 +28,7 @@ export default async function Track(props: PageProps<'/track/[token]'>) {
       <section className="mt-12 rounded-[var(--radius-md)] border border-line bg-white p-5">
         <ul className="divide-y divide-line">{o.items.map((i, k) => (
           <li key={k} className="py-3"><div className="flex justify-between gap-3"><span>{i.name}{i.variant && ` (${i.variant})`} × {i.qty}</span><span className="shrink-0 whitespace-nowrap text-brown">{fmt(i.price * i.qty)}</span></div>
-            {i.measurements && <p className="mt-1 text-xs text-muted">{Object.entries(i.measurements).map(([k2, v]) => `${k2}: ${v}`).join(' · ')}</p>}
+            {i.measurements && <p className="mt-1 text-xs text-muted">{Object.entries(i.measurements).map(([k2, v]) => (k2 === 'صورة مرجعية' ? '📷 صورة مرفقة' : `${k2}: ${v}`)).join(' · ')}</p>}
             {o.status === 'received' && i.product_id && <div className="mt-3"><ReviewForm token={token} productId={i.product_id} name={i.name} /></div>}</li>))}</ul>
         <div className="mt-3 space-y-1 border-t border-line pt-3 text-sm text-muted">
           {o.discount > 0 && <p className="flex justify-between"><span>الخصم</span><span>-{fmt(o.discount)}</span></p>}

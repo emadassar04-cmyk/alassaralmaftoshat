@@ -9,12 +9,12 @@ import { getBranches, getCategories, getSetting } from '@/lib/data'
 
 export const revalidate = 60
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
-  const [branches, pixel, categories] = await Promise.all([getBranches(), getSetting<string>('meta_pixel_id', ''), getCategories()])
+  const [branches, pixel, categories, social] = await Promise.all([getBranches(), getSetting<string>('meta_pixel_id', ''), getCategories(), getSetting<Record<string, string>>('social', {})])
   return (
     <Providers>
       <Header categories={categories.map((c) => ({ slug: c.slug, name: c.name }))} />
       <main id="main">{children}</main>
-      <Footer branches={branches} categories={categories} />
+      <Footer branches={branches} categories={categories} social={social} />
       <CartDrawer />
       <LeadPopup />
       <FloatingWhatsApp phone={branches[0]?.whatsapp ?? null} />

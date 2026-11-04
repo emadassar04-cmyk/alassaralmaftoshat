@@ -29,14 +29,15 @@ export function SectionHead({ eyebrow, title, sub, action, center = false }: { e
 export const SectionTitle = ({ eyebrow, title, sub }: { eyebrow: string; title: string; sub?: string }) => <SectionHead eyebrow={eyebrow} title={title} sub={sub} center />
 
 /* ---------------- Hero ---------------- */
-export function Hero({ tagline, categories }: { tagline: string; categories: number }) {
+export function Hero({ tagline, categories, title, text, image }: { tagline: string; categories: number; title?: string; text?: string; image?: string }) {
+  const heroImg: Media = image ? { src: image, real: true, alt: 'مفروشات العصار' } : MEDIA.hero
   return (
     <section className="relative overflow-hidden pb-10 pt-6 md:pb-16 md:pt-10">
       <div className="container-x grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
         <div className="hero-in relative z-10 order-2 lg:order-1">
           <p className="eyebrow">مفروشات العصار · {tagline}</p>
-          <h1 className="t-hero mt-6 text-charcoal"><span className="block">منذ 1996…</span><span className="block lg:whitespace-nowrap">نصنع <span className="text-brown">تفاصيل الراحة</span></span><span className="block">في منزلك</span></h1>
-          <p className="t-lead mt-6 max-w-xl">مفروشات تجمع بين جودة الاختيار، جمال التفاصيل، والتفصيل الذي يناسب مساحتك.</p>
+          {title ? <h1 className="t-hero mt-6 text-charcoal [text-wrap:balance]">{title}</h1> : <h1 className="t-hero mt-6 text-charcoal"><span className="block">منذ 1996…</span><span className="block lg:whitespace-nowrap">نصنع <span className="text-brown">تفاصيل الراحة</span></span><span className="block">في منزلك</span></h1>}
+          <p className="t-lead mt-6 max-w-xl">{text || 'مفروشات تجمع بين جودة الاختيار، جمال التفاصيل، والتفصيل الذي يناسب مساحتك.'}</p>
           <div className="mt-9 flex flex-col gap-3 sm:flex-row">
             <Link href="/shop" className="btn btn-solid">اكتشف مجموعتنا<ArrowLeft size={18} className="arrow" /></Link>
             <Link href="/custom" className="btn">صمّم مفروشاتك على مقاسك</Link>
@@ -49,9 +50,9 @@ export function Hero({ tagline, categories }: { tagline: string; categories: num
         </div>
         <div className="relative order-1 lg:order-2">
           <div className="media hero-img aspect-[4/5] !rounded-[var(--radius-xl)] sm:aspect-[5/4] lg:aspect-[4/4.6]">
-            <Image src={MEDIA.hero.src} alt={MEDIA.hero.alt} fill preload fetchPriority="high" sizes="(max-width:1024px) 100vw, 55vw" className="object-cover" />
+            <Image src={heroImg.src} alt={heroImg.alt} fill preload fetchPriority="high" sizes="(max-width:1024px) 100vw, 55vw" className="object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-charcoal/35 via-transparent to-transparent" />
-            <Illustrative m={MEDIA.hero} />
+            <Illustrative m={heroImg} />
           </div>
           <div className="glass absolute -bottom-6 end-4 hidden w-60 rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-lift)] sm:block lg:-end-6">
             <p className="flex items-center gap-2 text-sm font-medium text-brown"><Award size={18} strokeWidth={1.5} />30 عاماً من الثقة</p>
@@ -120,14 +121,14 @@ export function Categories({ items }: { items: Category[] }) {
 }
 
 /* ---------------- Product rails ---------------- */
-export function ProductRail({ eyebrow, title, sub, items, href }: { eyebrow: string; title: string; sub?: string; items: Product[]; href: string }) {
+export function ProductRail({ eyebrow, title, sub, items, href, wa = null }: { eyebrow: string; title: string; sub?: string; items: Product[]; href: string; wa?: string | null }) {
   if (!items.length) return null
   return (
     <section className="section">
       <div className="container-x"><SectionHead eyebrow={eyebrow} title={title} sub={sub} action={{ href, label: 'عرض الكل' }} /></div>
       <div className="container-x">
         <div className="no-scrollbar -mx-4 flex snap-x snap-mandatory gap-4 overflow-x-auto px-4 pb-2 md:mx-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:px-0 lg:grid-cols-4">
-          {items.slice(0, items.length >= 8 ? 8 : 4).map((p, i) => <div key={p.id} className="w-[70vw] max-w-[300px] shrink-0 snap-start md:w-auto md:max-w-none"><Reveal delay={(i % 4) * 0.06}><ProductCard p={p} /></Reveal></div>)}
+          {items.slice(0, items.length >= 8 ? 8 : 4).map((p, i) => <div key={p.id} className="w-[70vw] max-w-[300px] shrink-0 snap-start md:w-auto md:max-w-none"><Reveal delay={(i % 4) * 0.06}><ProductCard p={p} wa={wa} /></Reveal></div>)}
         </div>
       </div>
     </section>
@@ -169,14 +170,14 @@ export function CustomSection() {
 
 /* ---------------- Our story ---------------- */
 const STORY = [['1996', 'بداية الحكاية', 'افتتحنا أول محل بحلم بسيط: مفروشات تليق بكل بيت.'], ['2005', 'التفصيل على المقاس', 'بدأنا نفصّل الستائر والفرش العربي حسب كل بيت.'], ['2015', 'افتتاح فرع النصيرات', 'اتسعت العائلة وافتتحنا فرعاً ثانياً لنقترب منكم.'], ['اليوم', 'خبرة وثقة وجودة', 'ما زلنا نختار الأفخم لبيتك، وبكل أمانة.']]
-export function Story({ heading = true }: { heading?: boolean }) {
+export function Story({ heading = true, text }: { heading?: boolean; text?: string }) {
   return (
     <section className="section bg-white" aria-labelledby="story-h">
       <div className="container-x grid gap-12 lg:grid-cols-[.9fr_1.1fr] lg:gap-20">
         <Reveal className="lg:sticky lg:top-28 lg:self-start">
           <p className="eyebrow">قصة العصار</p>
           {heading ? <h2 id="story-h" className="t-h2 mt-4">ثلاثون عاماً نصنع فيها الراحة، بيتاً بعد بيت</h2> : <p id="story-h" className="t-h2 mt-4">ثلاثون عاماً نصنع فيها الراحة، بيتاً بعد بيت</p>}
-          <p className="t-lead mt-5">بدأت الحكاية في دير البلح بمحل صغير وثقة كبيرة. اليوم نستقبلكم في فرعين، وما زالت القاعدة نفسها: الزبون جارنا، والجودة وعد.</p>
+          <p className="t-lead mt-5 whitespace-pre-line">{text || 'بدأت الحكاية في دير البلح بمحل صغير وثقة كبيرة. اليوم نستقبلكم في فرعين، وما زالت القاعدة نفسها: الزبون جارنا، والجودة وعد.'}</p>
           <div className="media mt-8 hidden aspect-[4/3] lg:block"><Image src={MEDIA.story.src} alt={MEDIA.story.alt} fill sizes="40vw" className="object-cover" /><Illustrative m={MEDIA.story} /></div>
         </Reveal>
         <ol className="relative border-s hairline">

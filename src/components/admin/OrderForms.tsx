@@ -1,6 +1,6 @@
 'use client'
 import { useActionState } from 'react'
-import { setItemPrice, setOrderStatus } from '@/app/admin/orders-actions'
+import { saveOrderNote, setItemPrice, setOrderStatus } from '@/app/admin/orders-actions'
 import { STATUS_AR } from '@/lib/admin-consts'
 
 export function StatusForm({ id, status }: { id: string; status: string }) {
@@ -26,3 +26,15 @@ export function ItemPriceForm({ id, unit, custom }: { id: string; unit: number; 
   )
 }
 export function PrintButton() { return <button className="a-btn a-btn-solid no-print" onClick={() => window.print()}>طباعة / حفظ PDF</button> }
+
+export function OrderNoteForm({ id, note }: { id: string; note: string | null }) {
+  const [s, action, pending] = useActionState(saveOrderNote, undefined)
+  return (
+    <form action={action} className="space-y-2">
+      <input type="hidden" name="id" value={id} />
+      <textarea name="note" defaultValue={note ?? ''} maxLength={2000} className="a-field min-h-24" placeholder="ملاحظة داخلية للفريق (ما بتظهر للزبون): مثلاً اتصلنا فيه، موعد التسليم، مين جهّز الطلب…" />
+      <div className="flex items-center gap-3"><button className="a-btn a-btn-solid" disabled={pending}>{pending ? '…' : 'حفظ الملاحظة'}</button>
+        {s?.error && <span className="text-sm text-rose-700">{s.error}</span>}{s?.ok && <span className="text-sm text-emerald-700">تم الحفظ</span>}</div>
+    </form>
+  )
+}

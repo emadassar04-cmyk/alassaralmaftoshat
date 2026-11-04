@@ -4,7 +4,7 @@ import { requireStaff, PAYMENT_AR, STATUS_AR, STATUS_TONE, dt } from '@/lib/admi
 import { fmt } from '@/lib/format'
 import { BranchChart, DailyChart } from '@/components/admin/Charts'
 import { LiveOrders } from '@/components/admin/LiveOrders'
-import { BellRing, Phone, ShoppingBag, Wallet } from 'lucide-react'
+import { BadgePercent, BellRing, FolderTree, Package, PackageX, Phone, ShoppingBag, Wallet } from 'lucide-react'
 
 function Kpi({ icon, label, value, accent = false }: { icon: React.ReactNode; label: string; value: React.ReactNode; accent?: boolean }) {
   return <div className="a-card flex items-start justify-between gap-3"><div><p className="a-muted">{label}</p><p className={`num mt-2 font-display text-[2.1rem] font-light leading-none ${accent ? 'text-[var(--a-copper)]' : ''}`}>{value}</p></div><span className={`grid h-10 w-10 shrink-0 place-items-center rounded-full ${accent ? 'bg-[var(--a-copper)] text-white' : 'bg-[var(--a-sand)] text-[var(--a-copper)]'}`}>{icon}</span></div>
@@ -21,11 +21,19 @@ export default async function AdminHome(props: PageProps<'/admin'>) {
   const sp = await props.searchParams
   const range = RANGES.some(([k]) => k === sp.range) ? String(sp.range) : 'week'
   const [{ data: from }, { data: to }] = await Promise.all([sb.rpc('range_start', { p_range: range }), sb.rpc('range_start', { p_range: 'tomorrow' })])
-  const [{ data: stats }, { data: recent }, { data: low }] = await Promise.all([
+  const [{ data: stats }, { data: recent }, { data: low }, { data: catalog }, { count: catCount }, { data: lowP }] = await Promise.all([
     sb.rpc('admin_stats', { p_from: from, p_to: to }),
     sb.from('orders').select('number, customer_name, total, status, created_at, branches(name)').order('created_at', { ascending: false }).limit(6),
     sb.from('product_variants').select('label, stock, products!inner(name, is_custom)').lte('stock', 5).eq('products.is_custom', false).order('stock').limit(8),
+    sb.from('products').select('id, is_custom, stock, sale_price, sale_starts_at, sale_ends_at, status, product_variants(stock)'),
+    sb.from('categories').select('id', { count: 'exact', head: true }),
+    sb.from('products').select('name, stock').eq('is_custom', false).not('stock', 'is', null).lte('stock', 5).order('stock').limit(8),
   ])
+  const now = Date.parse(String(to)) - 864e5 // request time without calling Date.now() during render
+  const prods = (catalog ?? []) as { is_custom: boolean; stock: number | null; sale_price: number | null; sale_starts_at: string | null; sale_ends_at: string | null; status: string; product_variants: { stock: number }[] }[]
+  const outOfStock = prods.filter((p) => !p.is_custom && (p.product_variants.length ? p.product_variants.every((v) => v.stock <= 0) : p.stock === 0)).length
+  const onSale = prods.filter((p) => p.sale_price != null && (!p.sale_starts_at || Date.parse(p.sale_starts_at) <= now) && (!p.sale_ends_at || Date.parse(p.sale_ends_at) > now)).length
+  const lowAll = [...(low ?? []).map((v) => ({ name: `${(v.products as unknown as { name: string }).name} · ${v.label}`, stock: v.stock })), ...(lowP ?? []).map((p) => ({ name: p.name, stock: p.stock as number }))].sort((a, b) => a.stock - b.stock).slice(0, 8)
   const s = stats as Stats | null
   const own = staff.role === 'owner'
   return (
@@ -41,6 +49,12 @@ export default async function AdminHome(props: PageProps<'/admin'>) {
         {own && <Kpi icon={<Wallet size={19} strokeWidth={1.6} />} label="المبيعات (بدون الملغي)" value={fmt(s?.sales ?? 0)} />}
         {own && <Kpi icon={<Phone size={19} strokeWidth={1.6} />} label="أرقام جديدة (Leads)" value={s?.leads ?? 0} />}
       </section>
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Kpi icon={<Package size={19} strokeWidth={1.6} />} label="المنتجات" value={prods.length} />
+        <Kpi icon={<FolderTree size={19} strokeWidth={1.6} />} label="الأقسام" value={catCount ?? 0} />
+        <Kpi icon={<PackageX size={19} strokeWidth={1.6} />} label="غير متوفر" value={outOfStock} accent={outOfStock > 0} />
+        <Kpi icon={<BadgePercent size={19} strokeWidth={1.6} />} label="عليها عرض الآن" value={onSale} />
+      </section>
       {own && (
         <section className="grid gap-4 lg:grid-cols-3">
           <div className="a-card lg:col-span-2"><h2 className="mb-3 font-display text-lg font-normal">المبيعات اليومية</h2>{s?.daily?.length ? <DailyChart data={s.daily} /> : <p className="a-muted py-10 text-center">لا مبيعات في هذه الفترة</p>}</div>
@@ -55,7 +69,7 @@ export default async function AdminHome(props: PageProps<'/admin'>) {
             {!recent?.length && <tr><td colSpan={6} className="a-muted py-8 text-center">لا توجد طلبات بعد</td></tr>}</tbody></table></div></div>
         <div className="space-y-4">
           <div className="a-card"><h2 className="mb-3 font-display text-lg font-normal">الأكثر مبيعاً</h2><ol className="space-y-1 text-sm">{s?.top_products?.map((p) => <li key={p.name} className="flex justify-between gap-2"><span className="truncate">{p.name}</span><span>{p.qty}</span></li>)}{!s?.top_products?.length && <li className="a-muted">لا بيانات</li>}</ol></div>
-          <div className="a-card"><h2 className="mb-3 font-display text-lg font-normal">تنبيه المخزون المنخفض</h2><ul className="space-y-1 text-sm">{low?.map((v, i) => <li key={i} className="flex justify-between gap-2"><span className="truncate">{(v.products as unknown as { name: string }).name} · {v.label}</span><span className={v.stock === 0 ? 'font-semibold text-rose-700' : 'text-amber-700'}>{v.stock}</span></li>)}{!low?.length && <li className="a-muted">المخزون بخير</li>}</ul></div>
+          <div className="a-card"><h2 className="mb-3 font-display text-lg font-normal">تنبيه المخزون المنخفض</h2><ul className="space-y-1 text-sm">{lowAll.map((v, i) => <li key={i} className="flex justify-between gap-2"><span className="truncate">{v.name}</span><span className={v.stock === 0 ? 'font-semibold text-rose-700' : 'text-amber-700'}>{v.stock}</span></li>)}{!lowAll.length && <li className="a-muted">المخزون بخير</li>}</ul></div>
         </div>
       </section>
     </>

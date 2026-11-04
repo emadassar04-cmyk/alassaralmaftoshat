@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { requireOwner } from '@/lib/admin'
-import { BranchForm, HomeSettings, PaymentSettings, PixelSettings, TestimonialSettings } from '@/components/admin/MiscForms'
+import { BranchForm, HomeSettings, PaymentSettings, PixelSettings, SocialSettings, TestimonialSettings } from '@/components/admin/MiscForms'
 
 export const metadata: Metadata = { title: 'إعدادات المحل', robots: { index: false } }
 export const dynamic = 'force-dynamic'
@@ -15,6 +15,7 @@ export default async function Settings() {
       {branches?.map((b) => <BranchForm key={b.id} b={b} />)}
       <h2 className="font-display text-2xl text-[var(--a-copper)]">المتجر</h2>
       <HomeSettings v={s.home ?? { headline: 'مفروشات العصار', tagline: 'بيتك يستاهل الأفخم', badge: '' }} />
+      <SocialSettings v={s.social ?? {}} />
       <PaymentSettings v={s.payment_accounts ?? {}} />
       <TestimonialSettings v={s.testimonials ?? []} />
       <PixelSettings v={typeof s.meta_pixel_id === 'string' ? s.meta_pixel_id : ''} />
