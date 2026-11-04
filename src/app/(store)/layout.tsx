@@ -12,6 +12,7 @@ export default async function StoreLayout({ children }: { children: React.ReactN
   const [branches, pixel, categories, social] = await Promise.all([getBranches(), getSetting<string>('meta_pixel_id', ''), getCategories(), getSetting<Record<string, string>>('social', {})])
   return (
     <Providers>
+      <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden glass-bg"><div className="glass-blob glow-drift -top-40 start-[-10%] h-[36rem] w-[36rem] bg-[#c9a227]/25" /><div className="glass-blob glow-drift top-1/3 end-[-12%] h-[32rem] w-[32rem] bg-[#0f4c5c]/15 [animation-delay:-5s]" /><div className="glass-blob bottom-[-10%] start-1/3 h-[28rem] w-[28rem] bg-[#e0bd4a]/20" /></div>
       <Header categories={categories.map((c) => ({ slug: c.slug, name: c.name }))} />
       <main id="main">{children}</main>
       <Footer branches={branches} categories={categories} social={social} />
