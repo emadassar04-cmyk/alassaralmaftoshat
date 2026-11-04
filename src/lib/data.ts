@@ -12,7 +12,9 @@ async function safe<T>(fn: () => PromiseLike<{ data: T | null; error: unknown }>
   } catch (e) { console.error('[data]', e); return fallback }
 }
 
-export const getCategories = () => safe<Category[]>(() => sb().from('categories').select('*').order('sort'), [])
+/** Storefront categories: only those with at least one visible product, so customers never land on an empty section. */
+export const getCategories = async () => (await safe<(Category & { products?: unknown })[]>(() => sb().from('categories').select('*, products!inner(id)').eq('products.status', 'visible').order('sort') as never, []))
+  .map(({ products: _p, ...c }) => c as Category)
 export const getBranches = () => safe<Branch[]>(() => sb().from('branches').select('*').eq('is_active', true).order('sort'), [])
 const ordered = (l: Product[]) => l.map((p) => ({ ...p, product_variants: [...p.product_variants].sort((a, b) => ((a as { sort?: number }).sort ?? 0) - ((b as { sort?: number }).sort ?? 0)) }))
 export const getProducts = async () => ordered(await safe<Product[]>(() => sb().from('products').select(PRODUCT_SELECT).order('sort') as never, []))

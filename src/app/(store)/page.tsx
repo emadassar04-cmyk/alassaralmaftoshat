@@ -13,7 +13,7 @@ export default async function Home() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(branches.map((b) => ({ '@context': 'https://schema.org', '@type': 'FurnitureStore', name: b.name, address: b.address, telephone: b.phone, parentOrganization: { '@type': 'Organization', name: 'مفروشات العصار' }, foundingDate: '1996' }))) }} />
-      <Hero tagline={home.tagline || 'بيتك يستاهل الأفخم'} />
+      <Hero tagline={home.tagline || 'بيتك يستاهل الأفخم'} categories={cats.length} />
       <TrustBar />
       <Categories items={cats} />
       <ProductRail eyebrow="الأكثر طلباً" title="اختيارات زبائننا المفضّلة" sub="قطع أثبتت جودتها في بيوت كثيرة." items={best.length ? best : products} href="/shop" />

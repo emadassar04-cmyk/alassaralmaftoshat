@@ -123,7 +123,19 @@ export function ProductForm({ product, categories, canDelete }: { product: FormP
                 <div className="flex gap-1"><button type="button" className="a-btn !px-2" aria-label="للأعلى" onClick={() => setSchema((s) => ({ ...s, fields: move(s.fields, i, -1) }))}>↑</button><button type="button" className="a-btn !px-2" aria-label="للأسفل" onClick={() => setSchema((s) => ({ ...s, fields: move(s.fields, i, 1) }))}>↓</button>
                   <button type="button" className="a-btn a-btn-danger !px-2" aria-label="حذف الحقل" onClick={() => setSchema((s) => ({ ...s, fields: s.fields.filter((_, j) => j !== i) }))}>✕</button></div>
                 {fl.showIf && <p className="a-muted md:col-span-5">⚙ حقل مشروط (يظهر عند اختيار معيّن)، يُعدَّل من وضع JSON المتقدم.</p>}</li>))}</ul>
-            <button type="button" className="a-btn" onClick={() => setSchema((s) => ({ ...s, fields: [...s.fields, { key: `f${Date.now().toString(36)}`, label: '', type: 'number' }] }))}>+ حقل قياس</button></>)}</section>)}
+            <button type="button" className="a-btn" onClick={() => setSchema((s) => ({ ...s, fields: [...s.fields, { key: `f${Date.now().toString(36)}`, label: '', type: 'number' }] }))}>+ حقل قياس</button>
+            <div className="space-y-2 rounded-lg border border-[var(--a-line)] bg-[#faf4e8] p-3">
+              <label className="flex items-center gap-2 text-sm font-semibold"><input type="checkbox" checked={!!schema.pricing} onChange={(e) => {
+                const nums = schema.fields.filter((x) => x.type === 'number')
+                setSchema((s) => ({ ...s, pricing: e.target.checked ? { type: 'area', length: nums[0]?.key ?? '', width: nums[1]?.key ?? '', unit: 'm' } : undefined }))
+              }} /> احسب السعر تلقائياً بالمساحة (السعر × الطول × العرض)</label>
+              {schema.pricing && (() => { const pr = schema.pricing; const nums = schema.fields.filter((x) => x.type === 'number'); const setP = (p: Partial<typeof pr>) => setSchema((s) => ({ ...s, pricing: { ...pr, ...p } }))
+                return <div className="grid gap-2 sm:grid-cols-3">
+                  <label className="a-lbl">حقل الطول<select className="a-field mt-1" value={pr.length} onChange={(e) => setP({ length: e.target.value })}><option value="">اختر</option>{nums.map((x) => <option key={x.key} value={x.key}>{x.label || x.key}</option>)}</select></label>
+                  <label className="a-lbl">حقل العرض<select className="a-field mt-1" value={pr.width} onChange={(e) => setP({ width: e.target.value })}><option value="">اختر</option>{nums.map((x) => <option key={x.key} value={x.key}>{x.label || x.key}</option>)}</select></label>
+                  <label className="a-lbl">الزبون يكتب القياس بـ<select className="a-field mt-1" value={pr.unit ?? 'm'} onChange={(e) => setP({ unit: e.target.value as 'm' | 'cm' })}><option value="m">المتر</option><option value="cm">السنتيمتر</option></select></label>
+                  <p className="a-muted sm:col-span-3">سعر المنتج (أو سعر الخيار) = سعر المتر المربع. مثال: 13 ₪ و 4م × 4م = 208 ₪. السيرفر يحسب السعر بنفسه.</p></div> })()}
+            </div></>)}</section>)}
 
       {msg && <p role={msg.t === 'err' ? 'alert' : 'status'} className={`rounded-md p-3 text-sm ${msg.t === 'err' ? 'bg-rose-50 text-rose-800' : 'bg-emerald-50 text-emerald-800'}`}>{msg.s}</p>}
       <div className="sticky bottom-0 -mx-4 flex flex-wrap gap-2 border-t border-[var(--a-line)] bg-[var(--a-bg)] p-3 md:-mx-8 md:px-8">

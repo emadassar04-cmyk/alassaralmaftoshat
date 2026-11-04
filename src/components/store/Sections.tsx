@@ -29,7 +29,7 @@ export function SectionHead({ eyebrow, title, sub, action, center = false }: { e
 export const SectionTitle = ({ eyebrow, title, sub }: { eyebrow: string; title: string; sub?: string }) => <SectionHead eyebrow={eyebrow} title={title} sub={sub} center />
 
 /* ---------------- Hero ---------------- */
-export function Hero({ tagline }: { tagline: string }) {
+export function Hero({ tagline, categories }: { tagline: string; categories: number }) {
   return (
     <section className="relative overflow-hidden pb-10 pt-6 md:pb-16 md:pt-10">
       <div className="container-x grid items-center gap-10 lg:grid-cols-[1.05fr_1fr] lg:gap-14">
@@ -42,7 +42,7 @@ export function Hero({ tagline }: { tagline: string }) {
             <Link href="/custom" className="btn">صمّم مفروشاتك على مقاسك</Link>
           </div>
           <dl className="mt-12 grid max-w-lg grid-cols-3 divide-x divide-line border-t hairline pt-6">
-            {[['1996', 'سنة البداية'], ['2', 'فرعان في غزة'], ['8', 'أقسام مفروشات']].map(([n, l]) => (
+            {[['1996', 'سنة البداية'], ['2', 'فرعان في غزة'], [String(categories), 'أقسام مفروشات']].map(([n, l]) => (
               <div key={l} className="px-3 first:ps-0"><dt className="sr-only">{l}</dt><dd className="num font-display text-[clamp(1.6rem,3.4vw,2.3rem)] font-light text-charcoal">{n}</dd><dd className="mt-1 text-xs text-ink-2">{l}</dd></div>
             ))}
           </dl>
@@ -79,15 +79,27 @@ export function TrustBar() {
 
 /* ---------------- Collections: editorial bento ---------------- */
 // Hand-tuned spans (4 cols × 4 rows on desktop, 2 cols on mobile) so the grid reads like a magazine spread, not a template.
-const SPAN = ['col-span-2 row-span-2', 'col-span-2 md:col-span-2', 'col-span-1', 'col-span-1', 'col-span-1 md:row-span-2', 'col-span-1', 'col-span-2 md:col-span-2', 'col-span-2 md:col-span-3']
+const SPAN8 = ['col-span-2 row-span-2', 'col-span-2 md:col-span-2', 'col-span-1', 'col-span-1', 'col-span-1 md:row-span-2', 'col-span-1', 'col-span-2 md:col-span-2', 'col-span-2 md:col-span-3']
+const MD_FILL = ['', 'md:col-span-2', 'md:col-span-3']
+/** Any other count: 3 columns, a 2×2 lead tile, and the last tile stretched so no hole is left (2 cols on mobile). */
+function spans(n: number) {
+  if (n >= 8) return SPAN8
+  return Array.from({ length: n }, (_, i) => {
+    if (i === 0) return n === 1 ? 'col-span-2 row-span-2 md:col-span-3' : 'col-span-2 row-span-2'
+    const last = i === n - 1
+    const mob = last && (n - 1) % 2 === 1 ? 'col-span-2' : 'col-span-1'
+    const r = (4 + n - 1) % 3
+    return `${mob} ${last && r ? MD_FILL[3 - r] : 'md:col-span-1'}`
+  })
+}
 export function Categories({ items }: { items: Category[] }) {
   return (
     <section className="section container-x" aria-labelledby="collections">
       <SectionHead eyebrow="المجموعات" title="كل ما يحتاجه بيتك، بتفاصيل تليق به" sub="من وجه الفرشة إلى الجلسة العربية الكاملة. تصفّح أقسامنا واختر ما يناسب مساحتك." action={{ href: '/shop', label: 'تصفّح المتجر' }} />
       <h2 id="collections" className="sr-only">أقسامنا</h2>
-      <div className="grid auto-rows-[160px] grid-cols-2 gap-3 sm:auto-rows-[200px] md:grid-cols-4 md:gap-4 lg:auto-rows-[230px]">
-        {items.slice(0, 8).map((c, i) => (
-          <Reveal key={c.id} delay={(i % 4) * 0.06} className={SPAN[i] ?? 'col-span-1'}>
+      <div className={`grid auto-rows-[160px] grid-cols-2 gap-3 sm:auto-rows-[200px] md:gap-4 lg:auto-rows-[230px] ${items.length >= 8 ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
+        {items.slice(0, 8).map((c, i, all) => (
+          <Reveal key={c.id} delay={(i % 4) * 0.06} className={spans(all.length)[i] ?? 'col-span-1'}>
             <Link href={`/shop?cat=${c.slug}`} className="group media block h-full">
               {c.image_url && <Image src={c.image_url} alt="" fill sizes={i === 0 ? '(max-width:768px) 100vw, 50vw' : '(max-width:768px) 50vw, 25vw'} className="object-cover" />}
               <div className="absolute inset-0 bg-gradient-to-t from-charcoal/70 via-charcoal/10 to-transparent transition-opacity duration-500 group-hover:opacity-90" />
@@ -185,7 +197,7 @@ export function Story({ heading = true }: { heading?: boolean }) {
 }
 
 /* ---------------- Why Al-Assar ---------------- */
-const WHY = [[Award, 'خبرة منذ 1996', 'ثلاثة عقود في اختيار المفروشات لبيوت غزة ومعرفة ما يدوم.'], [Ruler, 'تفصيل حسب المقاس', 'ستائر وفرش عربي وباطنة تُفصَّل على قياسات بيتك بالضبط.'], [Layers, 'تنوع في المفروشات', 'ثمانية أقسام: من المخدات والشراشف إلى الكنب العربي.'], [Store, 'فروع لاستقبالكم', 'زورونا في دير البلح أو النصيرات وشاهدوا الخامات عن قرب.']] as const
+const WHY = [[Award, 'خبرة منذ 1996', 'ثلاثة عقود في اختيار المفروشات لبيوت غزة ومعرفة ما يدوم.'], [Ruler, 'تفصيل حسب المقاس', 'ستائر وفرش عربي وباطنة تُفصَّل على قياسات بيتك بالضبط.'], [Layers, 'تنوع في المفروشات', 'تشكيلة واسعة: من المخدات والشراشف إلى الجلسات العربية.'], [Store, 'فروع لاستقبالكم', 'زورونا في دير البلح أو النصيرات وشاهدوا الخامات عن قرب.']] as const
 export function WhyUs() {
   return (
     <section className="section container-x" aria-labelledby="why-h">
