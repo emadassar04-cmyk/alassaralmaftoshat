@@ -16,6 +16,8 @@ export function measuredPrice(p: { base_price: number; sale_price: number | null
   const area = l * w
   return { price: Math.round(rate * area * 100) / 100, rate, area, l, w }
 }
+/** Route params arrive percent-encoded for non-ASCII slugs (e.g. Arabic); decode safely before querying the DB. */
+export const slugParam = (s: string) => { try { return decodeURIComponent(s).normalize('NFC') } catch { return s } }
 export const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://alassaralmaftoshat.vercel.app'
 export const waLink = (phone: string | null | undefined, text = '') => `https://wa.me/${(phone ?? '').replace(/\D/g, '')}${text ? `?text=${encodeURIComponent(text)}` : ''}`
 
