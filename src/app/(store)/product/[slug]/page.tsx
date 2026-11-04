@@ -7,18 +7,18 @@ import { getBranches, getProduct, getProducts, getReviews } from '@/lib/data'
 import { ProductBuy } from '@/components/store/ProductBuy'
 import { ProductCard } from '@/components/store/ProductCard'
 import { Breadcrumbs } from '@/components/store/Breadcrumbs'
-import { SITE, unitPrice } from '@/lib/format'
+import { SITE, slugParam, unitPrice } from '@/lib/format'
 
 export const revalidate = 60
 export async function generateStaticParams() { return (await getProducts()).map((p) => ({ slug: p.slug })) }
 export async function generateMetadata(props: PageProps<'/product/[slug]'>): Promise<Metadata> {
-  const p = await getProduct((await props.params).slug)
+  const p = await getProduct(slugParam((await props.params).slug))
   if (!p) return {}
   const img = p.product_images[0]?.url ?? '/img/og.jpg'
   return { title: p.name, description: p.description ?? undefined, alternates: { canonical: `/product/${p.slug}` }, openGraph: { title: p.name, description: p.description ?? undefined, images: [img] } }
 }
 export default async function ProductPage(props: PageProps<'/product/[slug]'>) {
-  const p = await getProduct((await props.params).slug)
+  const p = await getProduct(slugParam((await props.params).slug))
   if (!p) notFound()
   const [all, reviews, branches] = await Promise.all([getProducts(), getReviews(p.id), getBranches()])
   const images = [...p.product_images].sort((a, b) => a.sort - b.sort)
