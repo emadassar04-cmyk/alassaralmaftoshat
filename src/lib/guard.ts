@@ -17,7 +17,7 @@ export async function verifyTurnstile(token: string | undefined, ip: string) {
 const MAP: Record<string, string> = {
   invalid_phone: 'رقم الجوال غير صحيح (مثال: 0591234567)', invalid_name: 'الرجاء كتابة الاسم', address_required: 'الرجاء كتابة عنوان التوصيل',
   invalid_branch: 'الرجاء اختيار الفرع', invalid_items: 'السلة فارغة', invalid_product: 'أحد المنتجات لم يعد متوفراً', invalid_variant: 'خيار المنتج غير صحيح',
-  variant_required: 'الرجاء اختيار خيارات المنتج', rate_limited: 'محاولات كثيرة، حاول بعد قليل', not_eligible: 'لا يمكن تقييم هذا المنتج الآن', already_reviewed: 'سبق أن قيّمت هذا المنتج',
+  variant_required: 'الرجاء اختيار خيارات المنتج', slot_taken: 'هذا الموعد انحجز للتو، اختر موعداً آخر', invalid_slot: 'الموعد غير متاح، اختر يوماً ووقتاً من القائمة', area_required: 'الرجاء كتابة المنطقة', visits_closed: 'الحجز متوقف حالياً، تواصل معنا على واتساب', rate_limited: 'محاولات كثيرة، حاول بعد قليل', not_eligible: 'لا يمكن تقييم هذا المنتج الآن', already_reviewed: 'سبق أن قيّمت هذا المنتج',
 }
 export function friendly(msg: string) {
   for (const k of Object.keys(MAP)) if (msg.includes(k)) return MAP[k]

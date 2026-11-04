@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation'
 import type { Role } from '@/lib/admin-consts'
 
 const ITEMS: [string, string, boolean][] = [
-  ['/admin', 'الرئيسية', false], ['/admin/orders', 'الطلبات', false], ['/admin/products', 'المنتجات', false], ['/admin/coupons', 'العروض والكوبونات', false],
+  ['/admin', 'الرئيسية', false], ['/admin/orders', 'الطلبات', false], ['/admin/visits', 'زيارات القياس', false], ['/admin/products', 'المنتجات', false], ['/admin/coupons', 'العروض والكوبونات', false],
   ['/admin/reviews', 'التقييمات', false], ['/admin/blog', 'المدونة', false], ['/admin/customers', 'الزبائن', true], ['/admin/leads', 'الأرقام (Leads)', true],
   ['/admin/reports', 'التقارير', true], ['/admin/bot', 'بوت تليجرام', true], ['/admin/conversations', 'محادثات البوت', true], ['/admin/integrations', 'الربط', true], ['/admin/users', 'المستخدمون', true], ['/admin/settings', 'إعدادات المحل', true], ['/admin/audit', 'السجل', true], ['/admin/account', 'حسابي', false],
 ]

@@ -4,7 +4,7 @@ import { Logo } from './Logo'
 import type { Branch, Category } from '@/lib/types'
 import { waLink } from '@/lib/format'
 
-const SHOP = [['/shop', 'كل المنتجات'], ['/shop?offers=1', 'العروض'], ['/custom', 'تفصيل على المقاس'], ['/about', 'قصة العصار'], ['/branches', 'الفروع'], ['/blog', 'المدونة']] as const
+const SHOP = [['/shop', 'كل المنتجات'], ['/shop?offers=1', 'العروض'], ['/custom', 'تفصيل على المقاس'], ['/visit', 'احجز زيارة قياس'], ['/about', 'قصة العصار'], ['/branches', 'الفروع'], ['/blog', 'المدونة']] as const
 
 export function Footer({ branches, categories = [] }: { branches: Branch[]; categories?: Category[] }) {
   const year = new Date().getFullYear()

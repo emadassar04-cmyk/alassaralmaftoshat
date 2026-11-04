@@ -146,7 +146,7 @@ export function CustomSection() {
                   </li>
                 ))}
               </ol>
-              <Link href="/custom" className="btn btn-solid mt-10">ابدأ طلب التفصيل<ArrowLeft size={18} className="arrow" /></Link>
+              <div className="mt-10 flex flex-col gap-3 sm:flex-row"><Link href="/custom" className="btn btn-solid">ابدأ طلب التفصيل<ArrowLeft size={18} className="arrow" /></Link><Link href="/visit" className="btn">احجز زيارة قياس مجانية</Link></div>
             </Reveal>
           </div>
         </div>
