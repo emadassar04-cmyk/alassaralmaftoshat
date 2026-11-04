@@ -22,6 +22,7 @@ const MAP: Record<string, string> = {
 export function friendly(msg: string) {
   for (const k of Object.keys(MAP)) if (msg.includes(k)) return MAP[k]
   if (msg.includes('out_of_stock:')) return `نفدت الكمية من: ${msg.split('out_of_stock:')[1].trim()}`
+  if (msg.includes('invalid_measurements:')) return `تأكد من القياسات (بالأرقام) لـ: ${msg.split('invalid_measurements:')[1].trim()}`
   if (msg.includes('coupon:')) return msg.split('coupon:')[1].trim()
   return 'حدث خطأ، حاول مرة أخرى'
 }

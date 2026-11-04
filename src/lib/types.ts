@@ -2,7 +2,8 @@ export type Field = {
   key: string; label: string; type: 'number' | 'select' | 'text'; options?: string[]; hint?: string
   showIf?: { key: string; in: string[] }
 }
-export type MeasurementSchema = { diagram?: 'curtains' | 'majlis' | 'batana'; fields: Field[] }
+export type AreaPricing = { type: 'area'; length: string; width: string; unit?: 'm' | 'cm' }
+export type MeasurementSchema = { diagram?: 'curtains' | 'majlis' | 'batana'; fields: Field[]; pricing?: AreaPricing }
 export type Category = { id: string; slug: string; name: string; description: string | null; image_url: string | null }
 export type Variant = { id: string; product_id: string; label: string; color: string | null; size: string | null; fabric: string | null; price: number | null; stock: number }
 export type Product = {
