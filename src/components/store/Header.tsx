@@ -2,11 +2,12 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ChevronDown, Menu, Search, ShoppingBag, X } from 'lucide-react'
+import { ArrowLeft, ChevronDown, Heart, Menu, Search, ShoppingBag, X } from 'lucide-react'
+import { useFavorites } from '@/lib/favorites'
 import { Logo } from './Logo'
 import { useCart } from '@/lib/cart'
 
-const NAV = [['/shop', 'المتجر'], ['/custom', 'تفصيل على المقاس'], ['/about', 'قصتنا'], ['/branches', 'الفروع'], ['/blog', 'المدونة']] as const
+const NAV = [['/shop', 'المتجر'], ['/shop?offers=1', 'العروض'], ['/custom', 'تفصيل على المقاس'], ['/about', 'قصتنا'], ['/branches', 'الفروع'], ['/contact', 'تواصل معنا']] as const
 type Cat = { slug: string; name: string }
 
 export function Header({ categories = [] }: { categories?: Cat[] }) {
@@ -14,12 +15,13 @@ export function Header({ categories = [] }: { categories?: Cat[] }) {
   const [scrolled, setScrolled] = useState(false)
   const path = usePathname()
   const { count, setOpen } = useCart()
+  const fav = useFavorites()
   useEffect(() => {
     const on = () => setScrolled(window.scrollY > 8)
     on(); window.addEventListener('scroll', on, { passive: true }); return () => window.removeEventListener('scroll', on)
   }, [])
   useEffect(() => { document.body.style.overflow = menu ? 'hidden' : ''; return () => { document.body.style.overflow = '' } }, [menu])
-  const active = (h: string) => path === h || path.startsWith(`${h}/`)
+  const active = (h: string) => !h.includes('?') && (path === h || path.startsWith(`${h}/`))
   return (
     <>
       <div className="bg-charcoal text-[12.5px] text-ivory/85">
@@ -33,7 +35,7 @@ export function Header({ categories = [] }: { categories?: Cat[] }) {
           <Logo />
           <nav className="hidden items-center gap-1 lg:flex" aria-label="التنقل الرئيسي">
             <div className="group relative">
-              <Link href="/shop" className={`flex items-center gap-1 rounded-full px-4 py-2 text-[15px] transition-colors hover:text-brown ${active('/shop') ? 'text-brown' : 'text-charcoal'}`}>المتجر<ChevronDown size={15} className="transition-transform group-hover:rotate-180" /></Link>
+              <Link href="/shop" className={`flex items-center gap-1 rounded-full px-3 py-2 text-[15px] xl:px-4 transition-colors hover:text-brown ${active('/shop') ? 'text-brown' : 'text-charcoal'}`}>المتجر<ChevronDown size={15} className="transition-transform group-hover:rotate-180" /></Link>
               {categories.length > 0 && (
                 <div className="invisible absolute start-0 top-full w-[440px] pt-3 opacity-0 transition-all duration-300 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
                   <div className="card grid grid-cols-2 gap-1 p-3 shadow-[var(--shadow-lift)]">
@@ -43,10 +45,14 @@ export function Header({ categories = [] }: { categories?: Cat[] }) {
                 </div>
               )}
             </div>
-            {NAV.slice(1).map(([h, l]) => <Link key={h} href={h} aria-current={active(h) ? 'page' : undefined} className={`rounded-full px-4 py-2 text-[15px] transition-colors hover:text-brown ${active(h) ? 'text-brown' : 'text-charcoal'}`}>{l}</Link>)}
+            {NAV.slice(1).map(([h, l]) => <Link key={h} href={h} aria-current={active(h) ? 'page' : undefined} className={`rounded-full px-3 py-2 text-[15px] xl:px-4 transition-colors hover:text-brown ${active(h) ? 'text-brown' : 'text-charcoal'}`}>{l}</Link>)}
           </nav>
           <div className="flex items-center gap-1">
             <Link href="/shop?focus=search" className="grid h-11 w-11 place-items-center rounded-full transition-colors hover:bg-sand" aria-label="ابحث في المنتجات"><Search size={20} strokeWidth={1.6} /></Link>
+            <Link href="/favorites" className="relative hidden h-11 w-11 place-items-center rounded-full transition-colors hover:bg-sand sm:grid" aria-label={`المفضلة${fav.count ? ` (${fav.count})` : ''}`}>
+              <Heart size={20} strokeWidth={1.6} />
+              {fav.count > 0 && <span className="num absolute end-1 top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-charcoal px-1 text-[10px] font-semibold text-white">{fav.count}</span>}
+            </Link>
             <button className="relative grid h-11 w-11 place-items-center rounded-full transition-colors hover:bg-sand" aria-label={`السلة${count ? ` (${count})` : ''}`} onClick={() => setOpen(true)}>
               <ShoppingBag size={20} strokeWidth={1.6} />
               {count > 0 && <span className="num absolute end-1 top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-brown px-1 text-[10px] font-semibold text-white">{count}</span>}
@@ -62,6 +68,7 @@ export function Header({ categories = [] }: { categories?: Cat[] }) {
           <nav className="container-x flex-1 overflow-y-auto py-6">
             <ul className="divide-y divide-line">
               {NAV.map(([h, l]) => <li key={h}><Link href={h} onClick={() => setMenu(false)} className="flex items-center justify-between py-4 font-display text-2xl font-light">{l}<ArrowLeft size={18} className="text-gold" /></Link></li>)}
+              <li><Link href="/favorites" onClick={() => setMenu(false)} className="flex items-center justify-between py-4 font-display text-2xl font-light">المفضلة {fav.count > 0 && `(${fav.count})`}<Heart size={18} className="text-gold" /></Link></li>
             </ul>
             {categories.length > 0 && <>
               <p className="eyebrow mt-8">الأقسام</p>

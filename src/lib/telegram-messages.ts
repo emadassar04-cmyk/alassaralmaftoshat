@@ -11,7 +11,7 @@ export function telegramText(event: string, d: D): string | null {
   switch (event) {
     case 'order.created': {
       const items = (d.items ?? []).map((i) => {
-        const m = i.measurements ? Object.entries(i.measurements).map(([k, v]) => `${esc(k)}: ${esc(v)}`).join('، ') : ''
+        const m = i.measurements ? Object.entries(i.measurements).map(([k, v]) => (k === 'صورة مرجعية' ? '📷 صورة مرفقة (بلوحة التحكم)' : `${esc(k)}: ${esc(v)}`)).join('، ') : ''
         return `• ${esc(i.name)}${i.variant ? ` (${esc(i.variant)})` : ''} × ${i.qty}${i.is_custom ? ' [تفصيل]' : ''}${m ? `\n   ${m}` : ''}`
       }).join('\n')
       return [`🛋️ <b>طلب جديد ${esc(d.number)}</b>`, `الزبون: ${esc(d.customer_name)} - ${esc(d.phone)}`, `الفرع: ${esc(d.branch)}`,

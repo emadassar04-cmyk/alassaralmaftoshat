@@ -1,13 +1,13 @@
 'use client'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, Bot, CalendarCheck, FileText, Home, KeyRound, LayoutDashboard, MessagesSquare, Package, Phone, Plug, ScrollText, Settings, ShoppingBag, Star, Tag, UserCircle, Users } from 'lucide-react'
+import { BadgePercent, BarChart3, Bot, CalendarCheck, FileText, FolderTree, Home, KeyRound, LayoutDashboard, MessagesSquare, Package, Phone, Plug, ScrollText, Settings, ShoppingBag, Star, Tag, UserCircle, Users } from 'lucide-react'
 import type { Role } from '@/lib/admin-consts'
 
 type Item = [href: string, label: string, ownerOnly: boolean, icon: typeof Home]
 const GROUPS: [string, Item[]][] = [
   ['اليومي', [['/admin', 'الرئيسية', false, LayoutDashboard], ['/admin/orders', 'الطلبات', false, ShoppingBag], ['/admin/visits', 'زيارات القياس', false, CalendarCheck], ['/admin/conversations', 'محادثات البوت', true, MessagesSquare]]],
-  ['المتجر', [['/admin/products', 'المنتجات والمخزون', false, Package], ['/admin/coupons', 'العروض والكوبونات', false, Tag], ['/admin/reviews', 'التقييمات', false, Star], ['/admin/blog', 'المدونة', false, FileText]]],
+  ['المتجر', [['/admin/products', 'المنتجات والمخزون', false, Package], ['/admin/categories', 'الأقسام', false, FolderTree], ['/admin/offers', 'العروض', false, BadgePercent], ['/admin/coupons', 'الكوبونات', false, Tag], ['/admin/reviews', 'التقييمات', false, Star], ['/admin/blog', 'المدونة', false, FileText]]],
   ['الزبائن والتقارير', [['/admin/customers', 'الزبائن', true, Users], ['/admin/leads', 'الأرقام (Leads)', true, Phone], ['/admin/reports', 'التقارير', true, BarChart3]]],
   ['الإعدادات', [['/admin/bot', 'بوت تليجرام', true, Bot], ['/admin/integrations', 'الربط', true, Plug], ['/admin/users', 'المستخدمون', true, KeyRound], ['/admin/settings', 'إعدادات المحل', true, Settings], ['/admin/audit', 'السجل', true, ScrollText], ['/admin/account', 'حسابي', false, UserCircle]]],
 ]

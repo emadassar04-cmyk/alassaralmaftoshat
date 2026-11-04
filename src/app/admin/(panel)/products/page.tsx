@@ -13,7 +13,7 @@ export default async function Products(props: PageProps<'/admin/products'>) {
   const sp = await props.searchParams
   const v = (k: string) => (typeof sp[k] === 'string' ? (sp[k] as string) : '')
   const { data: cats } = await sb.from('categories').select('id, name').order('sort')
-  let q = sb.from('products').select('id, name, slug, base_price, sale_price, is_custom, status, categories(name), product_variants(stock), product_images(url, sort)').order('sort')
+  let q = sb.from('products').select('id, name, slug, base_price, sale_price, is_custom, status, stock, is_featured, is_bestseller, categories(name), product_variants(stock), product_images(url, sort)').order('sort')
   if (v('cat')) q = q.eq('category_id', v('cat'))
   if (v('status')) q = q.eq('status', v('status'))
   if (clean(v('q'))) q = q.ilike('name', `%${clean(v('q'))}%`)
@@ -30,13 +30,14 @@ export default async function Products(props: PageProps<'/admin/products'>) {
       <div className="a-card a-scroll !p-0"><table className="a-table"><thead><tr><th></th><th>المنتج</th><th>القسم</th><th>السعر</th><th>المخزون</th><th>الحالة</th></tr></thead><tbody>
         {rows?.map((p) => {
           const img = [...(p.product_images as { url: string; sort: number }[])].sort((a, b) => a.sort - b.sort)[0]
-          const stock = (p.product_variants as { stock: number }[]).reduce((n, x) => n + x.stock, 0)
-          const minStock = (p.product_variants as { stock: number }[]).length ? Math.min(...(p.product_variants as { stock: number }[]).map((x) => x.stock)) : null
+          const vs = p.product_variants as { stock: number }[]
+          const stock: number | null = vs.length ? vs.reduce((n, x) => n + x.stock, 0) : (p.stock as number | null)
+          const minStock = vs.length ? Math.min(...vs.map((x) => x.stock)) : (p.stock as number | null)
           return <tr key={p.id}><td className="w-16">{img && <Image src={img.url} alt="" width={48} height={48} className="h-12 w-12 rounded object-cover" />}</td>
             <td><Link href={`/admin/products/${p.id}`} className="font-medium text-[var(--a-copper)] underline">{p.name}</Link>{p.is_custom && <span className="a-pill ms-2 bg-amber-100 text-amber-800">تفصيل</span>}</td>
             <td>{(p.categories as unknown as { name: string } | null)?.name}</td>
             <td className="whitespace-nowrap">{p.sale_price ? <><b>{fmt(p.sale_price)}</b> <s className="a-muted">{fmt(p.base_price)}</s></> : fmt(p.base_price)}</td>
-            <td>{p.is_custom ? <span className="a-muted">—</span> : <span className={minStock !== null && minStock <= 5 ? 'font-semibold text-rose-700' : ''}>{stock}{minStock !== null && minStock <= 5 && ' ⚠'}</span>}</td>
+            <td>{p.is_custom ? <span className="a-muted">—</span> : stock === null ? <span className="a-muted" title="بدون متابعة مخزون">∞</span> : <span className={minStock !== null && minStock <= 5 ? 'font-semibold text-rose-700' : ''}>{stock}{minStock !== null && minStock <= 5 && ' ⚠'}</span>}</td>
             <td><span className={`a-pill ${p.status === 'visible' ? 'bg-emerald-100 text-emerald-800' : 'bg-stone-200 text-stone-700'}`}>{p.status === 'visible' ? 'ظاهر' : 'مخفي'}</span></td></tr>
         })}
         {!rows?.length && <tr><td colSpan={6} className="a-muted py-10 text-center">لا توجد منتجات</td></tr>}</tbody></table></div>

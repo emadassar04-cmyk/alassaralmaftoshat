@@ -2,12 +2,14 @@ import Link from 'next/link'
 import { MapPin, MessageCircle, Phone } from 'lucide-react'
 import { Logo } from './Logo'
 import type { Branch, Category } from '@/lib/types'
+import { SocialIcon, socialLinks, type Social } from '@/lib/social'
 import { waLink } from '@/lib/format'
 
-const SHOP = [['/shop', 'كل المنتجات'], ['/shop?offers=1', 'العروض'], ['/custom', 'تفصيل على المقاس'], ['/visit', 'احجز زيارة قياس'], ['/about', 'قصة العصار'], ['/branches', 'الفروع'], ['/blog', 'المدونة']] as const
+const SHOP = [['/shop', 'كل المنتجات'], ['/shop?offers=1', 'العروض'], ['/custom', 'تفصيل على المقاس'], ['/visit', 'احجز زيارة قياس'], ['/about', 'قصة العصار'], ['/branches', 'الفروع'], ['/blog', 'المدونة'], ['/contact', 'تواصل معنا'], ['/favorites', 'المفضلة']] as const
 
-export function Footer({ branches, categories = [] }: { branches: Branch[]; categories?: Category[] }) {
+export function Footer({ branches, categories = [], social = {} }: { branches: Branch[]; categories?: Category[]; social?: Social }) {
   const year = new Date().getFullYear()
+  const links = socialLinks(social)
   return (
     <footer className="relative mt-16 overflow-hidden bg-charcoal pb-28 pt-20 text-ivory/80 md:pb-12">
       <div aria-hidden className="pointer-events-none absolute -top-40 start-1/2 h-80 w-[60rem] -translate-x-1/2 rounded-full bg-brown/25 blur-3xl" />
@@ -16,6 +18,7 @@ export function Footer({ branches, categories = [] }: { branches: Branch[]; cate
           <div className="max-w-md">
             <Logo tone="light" size="lg" />
             <p className="mt-5 text-[15px] leading-8 text-ivory/70">منذ 1996 ونحن نختار لبيوت غزة مفروشات تجمع الجودة وجمال التفاصيل، ونفصّل ما يناسب مساحتك بالضبط. بيتك يستاهل الأفخم.</p>
+            {links.length > 0 && <div className="mt-6 flex gap-2">{links.map((l) => <a key={l.key} href={l.url} target="_blank" rel="noopener" aria-label={l.name} className="grid h-10 w-10 place-items-center rounded-full border border-white/15 text-ivory/80 transition-colors hover:border-gold hover:text-gold"><SocialIcon k={l.key} size={17} /></a>)}</div>}
           </div>
           <p className="font-display text-[clamp(1.6rem,3.6vw,2.6rem)] font-light leading-tight text-ivory">بيتك يستاهل <span className="text-gold">الأفخم</span></p>
         </div>
