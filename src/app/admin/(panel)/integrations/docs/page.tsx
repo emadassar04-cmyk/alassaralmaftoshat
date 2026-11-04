@@ -36,7 +36,7 @@ export default async function Docs() {
         <section key={e.m + e.p} className="a-card space-y-2">
           <div className="flex flex-wrap items-center gap-2"><span className={`a-pill ${TONE[e.m]}`} dir="ltr">{e.m}</span><code dir="ltr" className="font-mono text-sm">{e.p}</code><span className="ms-auto"><CopyBtn text={curl(e)} label="نسخ curl" /></span></div>
           <p className="text-sm">{e.d}</p>
-          {e.body && <pre dir="ltr" className="overflow-x-auto rounded bg-[#f1e7d2] p-3 text-xs">{e.body}</pre>}
+          {e.body && <pre dir="ltr" className="overflow-x-auto rounded bg-[var(--a-sand)] p-3 text-xs">{e.body}</pre>}
           <p className="a-muted">الرد:</p><pre dir="ltr" className="overflow-x-auto rounded bg-white p-3 text-xs">{e.res}</pre>
         </section>))}
     </>

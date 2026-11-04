@@ -33,7 +33,7 @@ export default async function Products(props: PageProps<'/admin/products'>) {
           const stock = (p.product_variants as { stock: number }[]).reduce((n, x) => n + x.stock, 0)
           const minStock = (p.product_variants as { stock: number }[]).length ? Math.min(...(p.product_variants as { stock: number }[]).map((x) => x.stock)) : null
           return <tr key={p.id}><td className="w-16">{img && <Image src={img.url} alt="" width={48} height={48} className="h-12 w-12 rounded object-cover" />}</td>
-            <td><Link href={`/admin/products/${p.id}`} className="font-medium text-[#8f6a2e] underline">{p.name}</Link>{p.is_custom && <span className="a-pill ms-2 bg-amber-100 text-amber-800">تفصيل</span>}</td>
+            <td><Link href={`/admin/products/${p.id}`} className="font-medium text-[var(--a-copper)] underline">{p.name}</Link>{p.is_custom && <span className="a-pill ms-2 bg-amber-100 text-amber-800">تفصيل</span>}</td>
             <td>{(p.categories as unknown as { name: string } | null)?.name}</td>
             <td className="whitespace-nowrap">{p.sale_price ? <><b>{fmt(p.sale_price)}</b> <s className="a-muted">{fmt(p.base_price)}</s></> : fmt(p.base_price)}</td>
             <td>{p.is_custom ? <span className="a-muted">—</span> : <span className={minStock !== null && minStock <= 5 ? 'font-semibold text-rose-700' : ''}>{stock}{minStock !== null && minStock <= 5 && ' ⚠'}</span>}</td>

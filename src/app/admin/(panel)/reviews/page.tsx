@@ -14,7 +14,7 @@ export default async function Reviews() {
     <>
       <h1 className="a-h1">التقييمات</h1><p className="a-muted">لا يظهر أي تقييم للزوار إلا بعد الموافقة عليه. الزبون يقيّم من صفحة طلبه بعد حالة «مستلم».</p>
       <ul className="space-y-3">{data?.map((r) => (
-        <li key={r.id} className="a-card flex flex-wrap items-start justify-between gap-3"><div className="min-w-0 flex-1"><p className="font-medium">{(r.products as unknown as { name: string } | null)?.name} <span className="text-[#8f6a2e]">{'★'.repeat(r.rating)}</span></p>
+        <li key={r.id} className="a-card flex flex-wrap items-start justify-between gap-3"><div className="min-w-0 flex-1"><p className="font-medium">{(r.products as unknown as { name: string } | null)?.name} <span className="text-[var(--a-copper)]">{'★'.repeat(r.rating)}</span></p>
           <p className="mt-1">{r.body || <span className="a-muted">بدون نص</span>}</p><p className="a-muted mt-1">{r.author_name} · {dt(r.created_at)} · <span className={`a-pill ${TONE[r.status]}`}>{AR[r.status]}</span></p></div>
           <div className="flex flex-wrap gap-2">{r.status !== 'approved' && btn(r.id, 'approved', 'موافقة', 'a-btn-solid')}{r.status !== 'rejected' && btn(r.id, 'rejected', 'رفض')}{btn(r.id, 'delete', 'حذف', 'a-btn-danger')}</div></li>))}
         {!data?.length && <li className="a-card a-muted py-10 text-center">لا تقييمات بعد</li>}</ul>

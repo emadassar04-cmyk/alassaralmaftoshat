@@ -41,7 +41,7 @@ export default async function Visits(props: PageProps<'/admin/visits'>) {
       {rows.length === 0 && <p className="a-card a-muted py-10 text-center">لا توجد زيارات {view === 'upcoming' ? 'قادمة' : ''}. رابط الحجز للزبائن: <span dir="ltr">/visit</span></p>}
       {Object.entries(groups).map(([day, list]) => (
         <section key={day} className="space-y-2">
-          <h2 className="font-semibold">{dayLabel(day, true)}{day === today && <span className="a-pill ms-2 bg-[#8f6a2e] text-white">اليوم</span>}{day === addDays(today, 1) && <span className="a-pill ms-2 bg-[#f1e7d2]">بكرا</span>}</h2>
+          <h2 className="font-semibold">{dayLabel(day, true)}{day === today && <span className="a-pill ms-2 bg-[var(--a-copper)] text-white">اليوم</span>}{day === addDays(today, 1) && <span className="a-pill ms-2 bg-[var(--a-sand)]">بكرا</span>}</h2>
           {list.map((v) => (
             <article key={v.id} className="a-card grid gap-3 md:grid-cols-[110px_1fr_auto]">
               <div><p className="font-display text-xl text-[var(--a-copper)]">{slotLabel(v.slot)}</p><p className="a-muted">{v.number}</p><span className={`a-pill mt-1 ${TONE[v.status]}`}>{VISIT_STATUS_AR[v.status]}</span></div>

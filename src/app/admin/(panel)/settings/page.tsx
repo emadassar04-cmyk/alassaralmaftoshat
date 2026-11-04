@@ -11,9 +11,9 @@ export default async function Settings() {
   return (
     <>
       <h1 className="a-h1">إعدادات المحل</h1><p className="a-muted">كل ما هنا يظهر في المتجر فوراً (خلال دقيقة) بدون أي برمجة.</p>
-      <h2 className="font-display text-2xl text-[#8f6a2e]">الفرعان</h2>
+      <h2 className="font-display text-2xl text-[var(--a-copper)]">الفرعان</h2>
       {branches?.map((b) => <BranchForm key={b.id} b={b} />)}
-      <h2 className="font-display text-2xl text-[#8f6a2e]">المتجر</h2>
+      <h2 className="font-display text-2xl text-[var(--a-copper)]">المتجر</h2>
       <HomeSettings v={s.home ?? { headline: 'مفروشات العصار', tagline: 'بيتك يستاهل الأفخم', badge: '' }} />
       <PaymentSettings v={s.payment_accounts ?? {}} />
       <TestimonialSettings v={s.testimonials ?? []} />

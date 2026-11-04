@@ -9,7 +9,7 @@ const TONE = { ok: 'bg-emerald-100 text-emerald-800', off: 'bg-stone-200 text-st
 function Card({ title, badge, last, children }: { title: string; badge: Badge; last?: string | null; children: ReactNode }) {
   return (
     <section className="a-card space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-display text-2xl text-[#8f6a2e]">{title}</h2><span className={`a-pill ${TONE[badge.tone]}`}>{badge.label}</span></div>
+      <div className="flex flex-wrap items-center justify-between gap-2"><h2 className="font-display text-2xl text-[var(--a-copper)]">{title}</h2><span className={`a-pill ${TONE[badge.tone]}`}>{badge.label}</span></div>
       <p className="a-muted">آخر استخدام: {last ?? 'لم يُستخدم بعد'}</p>{children}
     </section>
   )
