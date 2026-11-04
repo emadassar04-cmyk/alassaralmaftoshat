@@ -37,3 +37,10 @@ export async function setItemPrice(_: R | undefined, fd: FormData): Promise<R> {
   if (error) return { error: 'تعذّر حفظ السعر' }
   revalidatePath('/admin', 'layout'); return { ok: true }
 }
+
+export async function markReviewRequested(id: string): Promise<R> {
+  const { sb } = await requireStaff()
+  const p = z.string().uuid().safeParse(id); if (!p.success) return { error: 'طلب غير صحيح' }
+  await sb.from('orders').update({ review_requested_at: new Date().toISOString() }).eq('id', p.data).eq('status', 'received')
+  revalidatePath('/admin/orders'); revalidatePath(`/admin/orders/${p.data}`); return { ok: true }
+}

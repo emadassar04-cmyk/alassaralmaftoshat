@@ -25,7 +25,13 @@ export default async function Track(props: PageProps<'/track/[token]'>) {
               <span className={`mx-auto grid h-8 w-8 place-items-center rounded-full border text-sm ${i <= idx ? 'border-brown bg-brown text-white' : 'border-line bg-ivory text-muted'} ${i === idx ? 'animate-pulse shadow-[0_0_18px_#c8a36a]' : ''}`}>{i + 1}</span>
               <span className={`mt-2 block text-sm ${i <= idx ? 'text-brown' : 'text-muted'}`}>{STATUS_LABEL[s]}</span></li>))}
         </ol>)}
-      <section className="mt-12 rounded-[var(--radius-md)] border border-line bg-white p-5">
+      {o.status === 'received' && (
+        <div id="review" className="mt-10 scroll-mt-28 rounded-[var(--radius-lg)] border border-[#e0bd4a]/60 bg-gradient-to-l from-[#fbf3dc] to-white p-5 text-center">
+          <p className="text-2xl" aria-hidden>⭐⭐⭐⭐⭐</p>
+          <p className="t-h3 mt-2">استلمت طلبك؟ رأيك بيهمنا</p>
+          <p className="mt-1 text-sm text-ink-2">قيّم كل منتج تحت بنجوم وكلمتين. تقييمك بيساعد غيرك يختار، وبيظهر بعد مراجعته.</p>
+        </div>)}
+      <section className="mt-6 rounded-[var(--radius-md)] border border-line bg-white p-5">
         <ul className="divide-y divide-line">{o.items.map((i, k) => (
           <li key={k} className="py-3"><div className="flex justify-between gap-3"><span>{i.name}{i.variant && ` (${i.variant})`} × {i.qty}</span><span className="shrink-0 whitespace-nowrap text-brown">{fmt(i.price * i.qty)}</span></div>
             {i.measurements && <p className="mt-1 text-xs text-muted">{Object.entries(i.measurements).map(([k2, v]) => (k2 === 'صورة مرجعية' ? '📷 صورة مرفقة' : `${k2}: ${v}`)).join(' · ')}</p>}

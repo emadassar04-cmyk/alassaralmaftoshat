@@ -24,6 +24,9 @@ export function inStock(p: { is_custom: boolean; stock?: number | null; product_
   if (p.product_variants.length) return p.product_variants.some((v) => v.stock > 0)
   return p.stock == null || p.stock > 0
 }
+/** WhatsApp text asking a customer to review a received order (links to their tracking page, where the review form is). */
+export const reviewRequestText = (name: string, number: string, token: string) =>
+  `مرحباً ${name} 🌟\nشكراً لثقتك بمفروشات العصار، ونتمنى تكون مبسوط بطلبك ${number}.\nرأيك بيهمنا كثير وبيساعد غيرك يختار. قيّم مشترياتك بدقيقة وحدة من هون:\n${process.env.NEXT_PUBLIC_SITE_URL || 'https://alassaralmaftoshat.vercel.app'}/track/${token}#review\nشكراً إلك 🙏`
 export const SITE = process.env.NEXT_PUBLIC_SITE_URL || 'https://alassaralmaftoshat.vercel.app'
 export const waLink = (phone: string | null | undefined, text = '') => `https://wa.me/${(phone ?? '').replace(/\D/g, '')}${text ? `?text=${encodeURIComponent(text)}` : ''}`
 

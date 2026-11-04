@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { requireStaff, PAYMENT_AR, STATUS_AR, STATUS_TONE, dt } from '@/lib/admin'
-import { fmt } from '@/lib/format'
+import { fmt, waLink } from '@/lib/format'
+import { MessageCircle } from 'lucide-react'
+import { ReviewRequestButton } from '@/components/admin/ReviewRequest'
 import { LiveOrders } from '@/components/admin/LiveOrders'
 import { gazaIso, isDay } from '@/lib/gaza'
 
@@ -16,7 +18,7 @@ export default async function Orders(props: PageProps<'/admin/orders'>) {
   const v = (k: string) => (typeof sp[k] === 'string' ? (sp[k] as string) : '')
   const page = Math.max(1, Number(v('page')) || 1)
   const { data: branches } = await sb.from('branches').select('id, name').order('sort')
-  let q = sb.from('orders').select('id, number, customer_name, phone, total, status, payment_method, fulfillment, created_at, branches(name)', { count: 'exact' }).order('created_at', { ascending: false }).range((page - 1) * PAGE, page * PAGE - 1)
+  let q = sb.from('orders').select('id, number, token, review_requested_at, customer_name, phone, total, status, payment_method, fulfillment, created_at, branches(name)', { count: 'exact' }).order('created_at', { ascending: false }).range((page - 1) * PAGE, page * PAGE - 1)
   if (v('status')) q = q.eq('status', v('status') as 'new')
   if (v('branch')) q = q.eq('branch_id', v('branch'))
   if (v('pay')) q = q.eq('payment_method', v('pay'))
@@ -38,11 +40,11 @@ export default async function Orders(props: PageProps<'/admin/orders'>) {
         <div className="grid grid-cols-2 gap-2"><label className="a-lbl">من<input type="date" name="from" defaultValue={v('from')} className="a-field mt-1" /></label><label className="a-lbl">إلى<input type="date" name="to" defaultValue={v('to')} className="a-field mt-1" /></label></div>
         <div className="flex gap-2 sm:col-span-2 lg:col-span-6"><button className="a-btn a-btn-solid">تطبيق</button><Link href="/admin/orders" className="a-btn">مسح</Link><span className="a-muted self-center">{count ?? 0} طلب</span></div>
       </form>
-      <div className="a-card a-scroll !p-0"><table className="a-table"><thead><tr><th>الطلب</th><th>الزبون</th><th>الجوال</th><th>الفرع</th><th>الاستلام</th><th>الدفع</th><th>الحالة</th><th>الإجمالي</th><th>الوقت</th></tr></thead><tbody>
+      <div className="a-card a-scroll !p-0"><table className="a-table"><thead><tr><th>الطلب</th><th>الزبون</th><th>الجوال</th><th>الفرع</th><th>الاستلام</th><th>الدفع</th><th>الحالة</th><th>الإجمالي</th><th>الوقت</th><th>تواصل</th></tr></thead><tbody>
         {rows?.map((o) => <tr key={o.id}><td><Link className="font-semibold text-[var(--a-copper)] underline" href={`/admin/orders/${o.id}`}>{o.number}</Link></td><td>{o.customer_name}</td><td dir="ltr" className="whitespace-nowrap">{o.phone}</td>
           <td>{(o.branches as unknown as { name: string } | null)?.name}</td><td>{o.fulfillment === 'pickup' ? 'من الفرع' : 'توصيل'}</td><td>{PAYMENT_AR[o.payment_method]}</td>
-          <td><span className={`a-pill ${STATUS_TONE[o.status]}`}>{STATUS_AR[o.status]}</span></td><td className="whitespace-nowrap">{fmt(o.total)}</td><td className="whitespace-nowrap">{dt(o.created_at)}</td></tr>)}
-        {!rows?.length && <tr><td colSpan={9} className="a-muted py-10 text-center">لا توجد طلبات مطابقة</td></tr>}</tbody></table></div>
+          <td><span className={`a-pill ${STATUS_TONE[o.status]}`}>{STATUS_AR[o.status]}</span></td><td className="whitespace-nowrap">{fmt(o.total)}</td><td className="whitespace-nowrap">{dt(o.created_at)}</td><td><div className="flex gap-1.5"><a href={waLink(o.phone, `مرحباً ${o.customer_name}، معك مفروشات العصار بخصوص طلبك ${o.number}`)} target="_blank" rel="noopener" aria-label={`واتساب ${o.customer_name}`} className="grid h-9 w-9 place-items-center rounded-full border border-[var(--a-line)] bg-white text-[#1f9d55] hover:border-[#1f9d55]"><MessageCircle size={16} /></a>{o.status === 'received' && <ReviewRequestButton compact id={o.id} phone={o.phone} name={o.customer_name} number={o.number} token={o.token} requested={!!o.review_requested_at} />}</div></td></tr>)}
+        {!rows?.length && <tr><td colSpan={10} className="a-muted py-10 text-center">لا توجد طلبات مطابقة</td></tr>}</tbody></table></div>
       {pages > 1 && <div className="flex items-center justify-center gap-3"><Link aria-disabled={page <= 1} className={`a-btn ${page <= 1 ? 'pointer-events-none opacity-40' : ''}`} href={qs(page - 1)}>السابق</Link><span className="a-muted">{page} / {pages}</span><Link className={`a-btn ${page >= pages ? 'pointer-events-none opacity-40' : ''}`} href={qs(page + 1)}>التالي</Link></div>}
     </>
   )
