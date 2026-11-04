@@ -2,7 +2,9 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { MessageCircle, Sofa } from 'lucide-react'
+import { MessageCircle, ShoppingBag, Sofa } from 'lucide-react'
+import { useCart } from '@/lib/cart'
+import { track } from '@/lib/pixel'
 import type { Product } from '@/lib/types'
 import { SITE, fmt, inStock, unitPrice, unitSuffix, waLink } from '@/lib/format'
 import { FavButton } from '../FavButton'
@@ -14,6 +16,11 @@ export function GlassProductCard({ p, i = 0, priority = false, wa = null }: { p:
   const from = Math.min(...prices); const ranged = p.is_custom || new Set(prices).size > 1
   const available = inStock(p)
   const off = p.sale_price && !p.is_custom ? Math.round((1 - p.sale_price / p.base_price) * 100) : 0
+  const { add } = useCart()
+  // one tap for simple items; products with options or made-to-measure go to their page to choose
+  const simple = !p.is_custom && p.product_variants.length === 0 && available
+  const order = () => { add({ product_id: p.id, variant_id: null, slug: p.slug, name: p.name, variant_label: null, image: img?.url ?? null, unit_price: unitPrice(p), qty: 1, is_custom: false }); track('AddToCart', { content_ids: [p.id], value: unitPrice(p), currency: 'ILS' }) }
+  const btn = 'flex h-11 items-center justify-center gap-1.5 rounded-2xl text-sm font-bold transition-all duration-200 active:scale-[.97]'
   return (
     <motion.article initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: Math.min(i, 8) * 0.05, ease: [0.22, 1, 0.36, 1] }}
       whileHover={{ y: -6 }} className="glass group relative flex flex-col rounded-3xl p-3 transition-[box-shadow,border-color] duration-300 hover:border-[#e0bd4a]/80 hover:shadow-[0_18px_48px_-12px_rgba(120,90,20,.35)]">
@@ -34,10 +41,12 @@ export function GlassProductCard({ p, i = 0, priority = false, wa = null }: { p:
           <span className="gold-text text-xl font-extrabold">{ranged && !unitSuffix(p) && <span className="text-xs font-medium text-charcoal/60">يبدأ من </span>}{fmt(from)}{unitSuffix(p) && <span className="text-xs font-medium text-charcoal/60">{unitSuffix(p)}</span>}</span>
           {p.sale_price && !p.is_custom && <s className="text-sm text-charcoal/50">{fmt(p.base_price)}</s>}
         </p>
-        <div className="mt-auto pt-4">
-          {wa ? <a href={waLink(wa, `مرحباً مفروشات العصار 👋\nبدي أستفسر عن: ${p.name}\n${SITE}/product/${p.slug}`)} target="_blank" rel="noopener"
-            className="flex h-11 w-full items-center justify-center gap-2 rounded-2xl bg-[#1f9d55] text-sm font-bold text-white transition-colors duration-200 hover:bg-[#178a49]"><MessageCircle size={18} />استفسر عبر واتساب</a>
-            : <Link href={`/product/${p.slug}`} className="gold-grad flex h-11 w-full items-center justify-center rounded-2xl text-sm font-bold">التفاصيل</Link>}
+        <div className={`mt-auto grid gap-2 pt-4 ${wa ? 'grid-cols-2' : 'grid-cols-1'}`}>
+          {simple ? <button type="button" onClick={order} className={`${btn} gold-grad shadow-[0_6px_16px_-8px_rgba(201,162,39,.8)] hover:brightness-105`}><ShoppingBag size={17} />اطلب الآن</button>
+            : available ? <Link href={p.is_custom ? `/custom?p=${p.slug}` : `/product/${p.slug}`} className={`${btn} gold-grad hover:brightness-105`}><ShoppingBag size={17} />{p.is_custom ? 'اطلب تفصيل' : 'اطلب الآن'}</Link>
+            : <Link href={`/product/${p.slug}`} className={`${btn} glass !shadow-none text-charcoal/70`}>غير متوفر</Link>}
+          {wa && <a href={waLink(wa, `مرحباً مفروشات العصار 👋\nبدي أستفسر عن: ${p.name}\n${SITE}/product/${p.slug}`)} target="_blank" rel="noopener" aria-label={`استفسار عن ${p.name} عبر واتساب`}
+            className={`${btn} bg-[#1f9d55] text-white hover:bg-[#178a49]`}><MessageCircle size={17} />استفسار</a>}
         </div>
       </div>
     </motion.article>

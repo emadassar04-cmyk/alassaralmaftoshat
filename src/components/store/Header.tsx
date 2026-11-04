@@ -30,7 +30,7 @@ export function Header({ categories = [] }: { categories?: Cat[] }) {
         </p>
       </div>
       <header className="sticky top-0 z-40 px-2 pt-2 md:px-4">
-        <div className={`glass mx-auto max-w-[1320px] rounded-3xl transition-shadow duration-300 ${scrolled ? 'shadow-[0_12px_40px_-12px_rgba(40,30,10,.25)]' : ''}`}>
+        <div className={`glass mx-auto max-w-[1320px] rounded-3xl transition-[background,box-shadow] duration-300 ${scrolled ? '!bg-[rgba(250,247,240,.9)] shadow-[0_12px_40px_-12px_rgba(40,30,10,.25)]' : ''}`}>
           <div className="flex h-[64px] items-center justify-between gap-4 px-4 md:px-6">
             <Logo />
             <nav className="hidden items-center gap-0.5 lg:flex" aria-label="روابط">
