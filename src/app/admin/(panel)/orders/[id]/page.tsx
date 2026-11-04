@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { requireStaff, PAYMENT_AR, STATUS_AR, STATUS_TONE, dt } from '@/lib/admin'
 import { fmt, waLink } from '@/lib/format'
 import { ItemPriceForm, OrderNoteForm, StatusForm } from '@/components/admin/OrderForms'
+import { ReviewRequestButton } from '@/components/admin/ReviewRequest'
 
 export const metadata: Metadata = { title: 'تفاصيل الطلب', robots: { index: false } }
 export const dynamic = 'force-dynamic'
@@ -21,6 +22,7 @@ export default async function OrderDetail(props: PageProps<'/admin/orders/[id]'>
   const refUrl = Object.fromEntries((signed ?? []).filter((x) => x.signedUrl).map((x) => [x.path, x.signedUrl]))
   const items = (o.order_items as { id: string; name: string; variant_label: string | null; qty: number; unit_price: number; custom_price: number | null; measurements: Record<string, string> | null; is_custom: boolean }[]).sort((a, b) => a.name.localeCompare(b.name))
   const branch = o.branches as unknown as { name: string; whatsapp: string | null } | null
+  const { data: revs } = o.status === 'received' ? await sb.from('reviews').select('rating, status, products(name)').eq('order_id', o.id) : { data: [] }
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -32,6 +34,13 @@ export default async function OrderDetail(props: PageProps<'/admin/orders/[id]'>
         <div className="a-card lg:col-span-2"><h2 className="mb-2 font-semibold">تغيير الحالة</h2><StatusForm id={o.id} status={o.status} />
           <p className="a-muted mt-3">المخزون يُخصم عند «مؤكد» ويرجع تلقائياً إذا أُلغي الطلب بعد التأكيد. {o.stock_deducted ? '✓ تم خصم المخزون لهذا الطلب.' : ''}</p></div>
       </section>
+      {o.status === 'received' && (
+        <section className="a-card flex flex-col gap-4 border-amber-300 bg-amber-50/60 sm:flex-row sm:items-center sm:justify-between">
+          <div><h2 className="font-semibold">⭐ تقييم الزبون</h2>
+            <p className="a-muted mt-1">{revs?.length ? `قيّم الزبون ${revs.length} من ${items.length} منتج: ${revs.map((r) => `${(r.products as unknown as { name: string } | null)?.name ?? ''} (${r.rating}★${r.status === 'pending' ? '، بانتظار موافقتك' : ''})`).join('، ')}` : o.review_requested_at ? `طلبت التقييم ${dt(o.review_requested_at)}، وما قيّم بعد.` : 'الطلب مستلم. ابعت للزبون رابط التقييم على واتساب (الرسالة جاهزة).'}</p>
+            {revs?.some((r) => r.status === 'pending') && <Link href="/admin/reviews" className="mt-1 inline-block text-sm underline">راجع التقييمات ووافق عليها ←</Link>}</div>
+          <ReviewRequestButton id={o.id} phone={o.phone} name={o.customer_name} number={o.number} token={o.token} requested={!!o.review_requested_at} />
+        </section>)}
       <section className="a-card"><h2 className="mb-2 font-semibold">ملاحظات داخلية</h2><OrderNoteForm id={o.id} note={o.staff_notes} /></section>
       <section className="a-card a-scroll"><h2 className="mb-2 font-semibold">البنود</h2><table className="a-table"><thead><tr><th>المنتج</th><th>الكمية</th><th>سعر الوحدة</th><th>سعر خاص للوحدة</th><th>المجموع</th></tr></thead><tbody>
         {items.map((i) => <tr key={i.id}><td><p className="font-medium">{i.name}{i.variant_label && ` (${i.variant_label})`}</p>{i.is_custom && <span className="a-pill bg-amber-100 text-amber-800">تفصيل</span>}

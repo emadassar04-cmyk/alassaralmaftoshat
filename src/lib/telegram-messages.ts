@@ -19,7 +19,7 @@ export function telegramText(event: string, d: D): string | null {
         ...(Number(d.discount) > 0 ? [`الخصم: ${esc(d.discount)} ₪ (${esc(d.coupon_code)})`] : []), `<b>الإجمالي: ${esc(d.total)} ₪</b>${d.fulfillment === 'delivery' ? ' + توصيل (يُتفق عليه)' : ''}`, '', items,
         ...(d.notes ? ['', `ملاحظات: ${esc(d.notes)}`] : []), '', `التتبع: ${SITE}/track/${esc(d.track_token)}`].join('\n')
     }
-    case 'order.status_changed': return `📦 الطلب <b>${esc(d.number)}</b>: ${ST[String(d.from)] ?? esc(d.from)} ← <b>${ST[String(d.to)] ?? esc(d.to)}</b>\nالزبون: ${esc(d.customer_name)} - ${esc(d.phone)}`
+    case 'order.status_changed': return `📦 الطلب <b>${esc(d.number)}</b>: ${ST[String(d.from)] ?? esc(d.from)} ← <b>${ST[String(d.to)] ?? esc(d.to)}</b>\nالزبون: ${esc(d.customer_name)} - ${esc(d.phone)}${d.to === 'received' ? `\n\n⭐ لا تنسَ تطلب تقييم الزبون: ${SITE}/admin/orders?q=${esc(d.number)} (زر النجمة)` : ''}`
     case 'lead.created': return `📱 رقم جديد من الموقع: ${esc(d.phone)}\nكود الخصم: ${esc(d.coupon_code)}`
     case 'review.created': return `⭐ تقييم جديد ينتظر الموافقة\nالمنتج: ${esc(d.product)}\nالتقييم: ${esc(d.rating)}/5 - ${esc(d.author)}${d.body ? `\n${esc(d.body)}` : ''}`
     case 'bot.handoff': return `🙋 زبون على بوت تليجرام بحاجة لموظف\nالزبون: ${esc(d.customer_name)}\nالسبب: ${esc(d.reason)}\nرد عليه من: ${SITE}/admin/conversations/${esc(d.conversation_id)}`
