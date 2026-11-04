@@ -2,7 +2,7 @@
 import type { Field, MeasurementSchema } from '@/lib/types'
 
 function Diagram({ kind }: { kind?: string }) {
-  const c = '#c8a36a'
+  const c = '#76563c'
   if (kind === 'curtains') return (
     <svg viewBox="0 0 220 150" className="w-full max-w-xs" role="img" aria-label="رسم توضيحي لقياس الشباك">
       <rect x="50" y="25" width="120" height="85" fill="none" stroke={c} strokeWidth="2" /><line x1="110" y1="25" x2="110" y2="110" stroke={c} strokeOpacity=".4" /><line x1="50" y1="12" x2="170" y2="12" stroke={c} markerStart="url(#a)" /><text x="110" y="9" fill={c} fontSize="10" textAnchor="middle">العرض</text>
@@ -23,7 +23,7 @@ export function MeasureFields({ schema, value, onChange }: { schema: Measurement
   const set = (f: Field, v: string) => onChange({ ...value, [f.label]: v })
   return (
     <div className="space-y-4">
-      <div className="flex justify-center border border-copper/15 bg-night p-3"><Diagram kind={schema.diagram} /></div>
+      <div className="flex justify-center rounded-[var(--radius-md)] border border-line bg-ivory p-3"><Diagram kind={schema.diagram} /></div>
       <div className="grid gap-4 sm:grid-cols-2">
         {schema.fields.filter(visible).map((f) => (
           <label key={f.key} className="block text-sm text-muted">{f.label}

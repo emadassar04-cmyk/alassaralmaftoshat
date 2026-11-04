@@ -30,14 +30,14 @@ export function LeadPopup() {
   if (!open) return null
   return (
     <div className="fixed inset-0 z-[60] grid place-items-center bg-black/75 p-4" role="dialog" aria-modal="true" aria-label="خصم 10%">
-      <div className="relative w-full max-w-md border border-copper/40 bg-night-2 p-7 text-center shadow-[0_0_80px_rgba(200,163,106,.15)]">
+      <div className="relative w-full max-w-md rounded-[var(--radius-md)] border border-line bg-white p-7 text-center rounded-[var(--radius-xl)] shadow-[var(--shadow-lift)]">
         <button className="absolute end-3 top-3 p-2 text-muted" aria-label="إغلاق" onClick={() => setOpen(false)}><X size={18} /></button>
         {code ? (<>
-          <p className="eyebrow">WELCOME</p><h2 className="font-display mt-3 text-3xl copper-text">هذا كودك</h2>
-          <p className="my-5 border border-dashed border-copper py-4 font-display text-3xl tracking-widest text-copper-lt" dir="ltr">{code}</p>
+          <p className="eyebrow">WELCOME</p><h2 className="font-display mt-3 text-3xl ">هذا كودك</h2>
+          <p className="my-5 rounded-[var(--radius-md)] border border-dashed border-brown py-4 font-display text-3xl tracking-widest text-brown" dir="ltr">{code}</p>
           <p className="text-sm text-muted">خصم 10% على أول طلب، يُستخدم مرة واحدة ومرتبط برقمك. اكتبه في صفحة إتمام الطلب.</p>
         </>) : (<>
-          <p className="eyebrow">AL-ASSAR</p><h2 className="font-display mt-3 text-3xl copper-text">خصم 10% على أول طلب</h2>
+          <p className="eyebrow">AL-ASSAR</p><h2 className="font-display mt-3 text-3xl ">خصم 10% على أول طلب</h2>
           <p className="mt-2 text-sm text-muted">اترك رقم جوالك واحصل على كود الخصم فوراً.</p>
           <form onSubmit={submit} className="mt-5 space-y-3">
             <input className="field text-center" dir="ltr" inputMode="tel" placeholder="059xxxxxxx" value={phone} onChange={(e) => setPhone(e.target.value)} required aria-label="رقم الجوال" />

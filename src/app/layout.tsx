@@ -1,13 +1,13 @@
 import type { Metadata, Viewport } from 'next'
-import { IBM_Plex_Sans_Arabic, Reem_Kufi } from 'next/font/google'
+import { Alexandria, IBM_Plex_Sans_Arabic } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import { SITE } from '@/lib/format'
 
-const display = Reem_Kufi({ subsets: ['arabic', 'latin'], variable: '--font-reem', display: 'swap' })
+const display = Alexandria({ subsets: ['arabic', 'latin'], weight: ['300', '400', '500'], variable: '--font-alex', display: 'swap' })
 const plex = IBM_Plex_Sans_Arabic({ subsets: ['arabic', 'latin'], weight: ['400', '500', '600'], variable: '--font-plex', display: 'swap' })
 
-export const viewport: Viewport = { themeColor: '#0e0b09', width: 'device-width', initialScale: 1 }
+export const viewport: Viewport = { themeColor: '#faf9f6', width: 'device-width', initialScale: 1 }
 export const metadata: Metadata = {
   metadataBase: new URL(SITE),
   title: { default: 'مفروشات العصار | بيتك يستاهل الأفخم', template: '%s | مفروشات العصار' },

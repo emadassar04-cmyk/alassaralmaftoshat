@@ -23,31 +23,31 @@ export function ProductBuy({ p, image, waPhone }: { p: Product; image: string | 
   }
   return (
     <div className="space-y-5">
-      <div className="flex items-baseline gap-3"><span className="font-display text-4xl text-copper-lt">{p.is_custom && 'يبدأ من '}{fmt(price)}</span>
-        {p.sale_price && !v?.price && <s className="text-muted">{fmt(p.base_price)}</s>}</div>
-      {p.is_custom && <p className="text-sm text-muted">السعر النهائي قد يختلف حسب المقاس والقماش.</p>}
+      <div className="flex items-baseline gap-3"><span className="num font-display text-[2.2rem] font-light text-charcoal">{p.is_custom && <span className="text-base text-ink-2">يبدأ من </span>}{fmt(price)}</span>
+        {p.sale_price && !v?.price && <><s className="num text-muted">{fmt(p.base_price)}</s><span className="chip bg-brown text-white">عرض</span></>}</div>
+      {p.is_custom && <p className="rounded-[var(--radius-md)] bg-sand px-4 py-3 text-sm text-ink-2">السعر النهائي يُحدَّد حسب المقاس والقماش، ونؤكده معك قبل التنفيذ.</p>}
       {variants.length > 0 && (
-        <fieldset><legend className="mb-2 text-sm text-muted">الخيارات</legend>
+        <fieldset><legend className="mb-3 text-sm font-medium text-charcoal">اختر الخيار</legend>
           <div className="flex flex-wrap gap-2">{colors.map((x) => {
             const out = !p.is_custom && x.stock <= 0
             return <button key={x.id} type="button" onClick={() => setVid(x.id)} aria-pressed={vid === x.id}
-              className={`border px-3 py-2 text-sm ${vid === x.id ? 'border-copper bg-copper/15 text-copper-lt' : 'border-copper/25 text-cream'} ${out ? 'opacity-50 line-through' : ''}`}>{x.label}</button>
+              className={`rounded-full border px-4 py-2.5 text-sm transition-colors ${vid === x.id ? 'border-charcoal bg-charcoal text-ivory' : 'border-line bg-white text-charcoal hover:border-charcoal'} ${out ? 'opacity-45 line-through' : ''}`}>{x.label}</button>
           })}</div></fieldset>)}
       {p.is_custom ? (
         <Link href={`/custom?p=${p.slug}`} className="btn btn-solid w-full">اطلب تفصيل على مقاسك</Link>
       ) : soldOut ? (
         <>
-          <p className="border border-copper/30 p-3 text-center text-muted">غير متوفر حالياً</p>
+          <p className="rounded-[var(--radius-md)] border border-line bg-white p-3 text-center text-ink-2">غير متوفر حالياً</p>
           <a className="btn btn-solid w-full" target="_blank" rel="noopener" href={waLink(waPhone, `مرحباً، هل سيتوفر "${p.name}" قريباً؟`)}>اسألنا على واتساب</a>
         </>
       ) : (
         <div className="flex gap-3">
-          <div className="flex items-center border border-copper/30">
-            <button className="h-12 w-12 text-xl" aria-label="إنقاص" onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button><span className="w-8 text-center">{qty}</span>
+          <div className="flex items-center rounded-full border border-line bg-white">
+            <button className="h-12 w-12 text-xl" aria-label="إنقاص" onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button><span className="num w-8 text-center">{qty}</span>
             <button className="h-12 w-12 text-xl" aria-label="زيادة" onClick={() => setQty((q) => Math.min(Math.max(1, v?.stock ?? 50), q + 1))}>+</button></div>
           <button className="btn btn-solid flex-1" onClick={() => add({ product_id: p.id, variant_id: v?.id ?? null, slug: p.slug, name: p.name, variant_label: v?.label ?? null, image, unit_price: price, qty, is_custom: false })}>أضف للسلة</button>
         </div>)}
-      <button type="button" onClick={share} className="inline-flex items-center gap-2 text-sm text-muted hover:text-copper-lt">{added ? <Check size={16} /> : <Share2 size={16} />}{added ? 'تم نسخ الرابط' : 'مشاركة'}</button>
+      <button type="button" onClick={share} className="inline-flex items-center gap-2 text-sm text-ink-2 hover:text-brown">{added ? <Check size={16} /> : <Share2 size={16} />}{added ? 'تم نسخ الرابط' : 'مشاركة'}</button>
     </div>
   )
 }

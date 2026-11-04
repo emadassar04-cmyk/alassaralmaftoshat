@@ -5,16 +5,16 @@ import { Footer } from '@/components/store/Footer'
 import { CartDrawer } from '@/components/store/CartDrawer'
 import { LeadPopup } from '@/components/store/LeadPopup'
 import { FloatingWhatsApp } from '@/components/store/FloatingWhatsApp'
-import { getBranches, getSetting } from '@/lib/data'
+import { getBranches, getCategories, getSetting } from '@/lib/data'
 
 export const revalidate = 60
 export default async function StoreLayout({ children }: { children: React.ReactNode }) {
-  const [branches, pixel] = await Promise.all([getBranches(), getSetting<string>('meta_pixel_id', '')])
+  const [branches, pixel, categories] = await Promise.all([getBranches(), getSetting<string>('meta_pixel_id', ''), getCategories()])
   return (
     <Providers>
-      <Header />
+      <Header categories={categories.map((c) => ({ slug: c.slug, name: c.name }))} />
       <main id="main">{children}</main>
-      <Footer branches={branches} />
+      <Footer branches={branches} categories={categories} />
       <CartDrawer />
       <LeadPopup />
       <FloatingWhatsApp phone={branches[0]?.whatsapp ?? null} />
