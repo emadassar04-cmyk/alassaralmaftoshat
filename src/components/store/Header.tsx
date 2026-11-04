@@ -2,12 +2,13 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, ChevronDown, Heart, Menu, Search, ShoppingBag, X } from 'lucide-react'
-import { useFavorites } from '@/lib/favorites'
+import { AnimatePresence, motion } from 'framer-motion'
+import { ArrowLeft, Heart, Menu, Ruler, Search, ShoppingBag, X } from 'lucide-react'
 import { Logo } from './Logo'
 import { useCart } from '@/lib/cart'
+import { useFavorites } from '@/lib/favorites'
 
-const NAV = [['/shop', 'المتجر'], ['/shop?offers=1', 'العروض'], ['/custom', 'تفصيل على المقاس'], ['/about', 'قصتنا'], ['/branches', 'الفروع'], ['/contact', 'تواصل معنا']] as const
+const LINKS = [['/shop?offers=1', 'العروض'], ['/custom', 'تفصيل على المقاس'], ['/about', 'قصتنا'], ['/branches', 'الفروع'], ['/contact', 'تواصل معنا']] as const
 type Cat = { slug: string; name: string }
 
 export function Header({ categories = [] }: { categories?: Cat[] }) {
@@ -16,68 +17,57 @@ export function Header({ categories = [] }: { categories?: Cat[] }) {
   const path = usePathname()
   const { count, setOpen } = useCart()
   const fav = useFavorites()
-  useEffect(() => {
-    const on = () => setScrolled(window.scrollY > 8)
-    on(); window.addEventListener('scroll', on, { passive: true }); return () => window.removeEventListener('scroll', on)
-  }, [])
+  useEffect(() => { const on = () => setScrolled(window.scrollY > 8); on(); window.addEventListener('scroll', on, { passive: true }); return () => window.removeEventListener('scroll', on) }, [])
   useEffect(() => { document.body.style.overflow = menu ? 'hidden' : ''; return () => { document.body.style.overflow = '' } }, [menu])
-  const active = (h: string) => !h.includes('?') && (path === h || path.startsWith(`${h}/`))
+  const on = (h: string) => !h.includes('?') && (path === h || path.startsWith(`${h}/`))
+  const cats = [...categories.map((c) => [`/shop?cat=${c.slug}`, c.name] as const), ['/shop', 'كل المنتجات'] as const]
+  const iconBtn = 'relative grid h-11 w-11 place-items-center rounded-full transition-colors duration-200 hover:bg-white/60'
   return (
     <>
-      <div className="bg-charcoal text-[12.5px] text-ivory/85">
-        <p className="container-x flex h-9 items-center justify-center gap-3 text-center">
-          <span>خبرة منذ 1996</span><span className="text-gold" aria-hidden>◆</span><span>فرعان في دير البلح والنصيرات</span>
-          <span className="hidden text-gold sm:inline" aria-hidden>◆</span><span className="hidden sm:inline">تفصيل حسب المقاس</span>
+      <div className="glass !rounded-none !border-x-0 !border-t-0 !shadow-none text-[12.5px] text-charcoal/80">
+        <p className="container-x flex h-9 items-center justify-center gap-2.5 text-center font-medium">
+          <span>خبرة منذ 1996</span><span className="text-[#c9a227]">·</span><span>فرعين دير البلح والنصيرات</span><span className="hidden text-[#c9a227] sm:inline">·</span><span className="hidden sm:inline">تفصيل على المقاس</span>
         </p>
       </div>
-      <header className={`sticky top-0 z-40 transition-[background,box-shadow] duration-500 ${scrolled ? 'glass shadow-[0_1px_0_var(--color-line)]' : 'bg-ivory'}`}>
-        <div className="container-x flex h-[72px] items-center justify-between gap-6">
-          <Logo />
-          <nav className="hidden items-center gap-1 lg:flex" aria-label="التنقل الرئيسي">
-            <div className="group relative">
-              <Link href="/shop" className={`flex items-center gap-1 rounded-full px-3 py-2 text-[15px] xl:px-4 transition-colors hover:text-brown ${active('/shop') ? 'text-brown' : 'text-charcoal'}`}>المتجر<ChevronDown size={15} className="transition-transform group-hover:rotate-180" /></Link>
-              {categories.length > 0 && (
-                <div className="invisible absolute start-0 top-full w-[440px] pt-3 opacity-0 transition-all duration-300 group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
-                  <div className="card grid grid-cols-2 gap-1 p-3 shadow-[var(--shadow-lift)]">
-                    {categories.map((c) => <Link key={c.slug} href={`/shop?cat=${c.slug}`} className="rounded-[10px] px-3 py-2.5 text-sm text-ink-2 transition-colors hover:bg-sand hover:text-charcoal">{c.name}</Link>)}
-                    <Link href="/shop" className="col-span-2 mt-1 flex items-center justify-between rounded-[10px] bg-sand px-3 py-2.5 text-sm font-medium text-brown">كل المنتجات<ArrowLeft size={16} /></Link>
-                  </div>
-                </div>
-              )}
+      <header className="sticky top-0 z-40 px-2 pt-2 md:px-4">
+        <div className={`glass mx-auto max-w-[1320px] rounded-3xl transition-shadow duration-300 ${scrolled ? 'shadow-[0_12px_40px_-12px_rgba(40,30,10,.25)]' : ''}`}>
+          <div className="flex h-[64px] items-center justify-between gap-4 px-4 md:px-6">
+            <Logo />
+            <nav className="hidden items-center gap-0.5 lg:flex" aria-label="روابط">
+              {LINKS.map(([h, l]) => <Link key={h} href={h} aria-current={on(h) ? 'page' : undefined} className={`rounded-full px-3.5 py-2 text-[14.5px] font-medium transition-colors duration-200 hover:bg-white/60 ${on(h) ? 'bg-white/70 text-charcoal' : 'text-charcoal/80'}`}>{l}</Link>)}
+            </nav>
+            <div className="flex items-center gap-0.5">
+              <Link href="/shop?focus=search" className={iconBtn} aria-label="ابحث في المنتجات"><Search size={20} strokeWidth={1.7} /></Link>
+              <Link href="/favorites" className={`${iconBtn} hidden sm:grid`} aria-label={`المفضلة${fav.count ? ` (${fav.count})` : ''}`}><Heart size={20} strokeWidth={1.7} />
+                {fav.count > 0 && <span className="num absolute end-1 top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-charcoal px-1 text-[10px] font-bold text-white">{fav.count}</span>}</Link>
+              <button className={iconBtn} aria-label={`السلة${count ? ` (${count})` : ''}`} onClick={() => setOpen(true)}><ShoppingBag size={20} strokeWidth={1.7} />
+                {count > 0 && <span className="num gold-grad absolute end-1 top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full px-1 text-[10px] font-bold">{count}</span>}</button>
+              <Link href="/custom" className="gold-grad ms-2 hidden h-11 items-center gap-2 rounded-full px-5 text-sm font-bold shadow-[0_8px_20px_-8px_rgba(201,162,39,.8)] transition-transform duration-200 hover:-translate-y-0.5 md:inline-flex"><Ruler size={16} />اطلب تفصيل</Link>
+              <button className={`${iconBtn} lg:hidden`} aria-label="القائمة" aria-expanded={menu} onClick={() => setMenu(true)}><Menu size={22} strokeWidth={1.7} /></button>
             </div>
-            {NAV.slice(1).map(([h, l]) => <Link key={h} href={h} aria-current={active(h) ? 'page' : undefined} className={`rounded-full px-3 py-2 text-[15px] xl:px-4 transition-colors hover:text-brown ${active(h) ? 'text-brown' : 'text-charcoal'}`}>{l}</Link>)}
-          </nav>
-          <div className="flex items-center gap-1">
-            <Link href="/shop?focus=search" className="grid h-11 w-11 place-items-center rounded-full transition-colors hover:bg-sand" aria-label="ابحث في المنتجات"><Search size={20} strokeWidth={1.6} /></Link>
-            <Link href="/favorites" className="relative hidden h-11 w-11 place-items-center rounded-full transition-colors hover:bg-sand sm:grid" aria-label={`المفضلة${fav.count ? ` (${fav.count})` : ''}`}>
-              <Heart size={20} strokeWidth={1.6} />
-              {fav.count > 0 && <span className="num absolute end-1 top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-charcoal px-1 text-[10px] font-semibold text-white">{fav.count}</span>}
-            </Link>
-            <button className="relative grid h-11 w-11 place-items-center rounded-full transition-colors hover:bg-sand" aria-label={`السلة${count ? ` (${count})` : ''}`} onClick={() => setOpen(true)}>
-              <ShoppingBag size={20} strokeWidth={1.6} />
-              {count > 0 && <span className="num absolute end-1 top-1 grid h-[18px] min-w-[18px] place-items-center rounded-full bg-brown px-1 text-[10px] font-semibold text-white">{count}</span>}
-            </button>
-            <Link href="/custom" className="btn btn-solid ms-2 hidden !min-h-11 !px-5 !text-sm xl:inline-flex">اطلب تفصيل</Link>
-            <button className="grid h-11 w-11 place-items-center rounded-full hover:bg-sand lg:hidden" aria-label="القائمة" aria-expanded={menu} onClick={() => setMenu(true)}><Menu size={22} strokeWidth={1.6} /></button>
           </div>
+          {cats.length > 1 && <nav aria-label="الأقسام" className="no-scrollbar hidden items-center gap-1 overflow-x-auto border-t border-white/60 px-4 py-2 md:flex md:px-6">
+            {cats.map(([h, l]) => <Link key={h} href={h} className="shrink-0 rounded-full px-3.5 py-1.5 text-[13.5px] text-charcoal/75 transition-colors duration-200 hover:bg-white/60 hover:text-charcoal">{l}</Link>)}
+          </nav>}
         </div>
       </header>
-      {menu && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-ivory lg:hidden" role="dialog" aria-modal="true" aria-label="القائمة">
-          <div className="container-x flex h-[72px] items-center justify-between border-b hairline"><Logo /><button className="grid h-11 w-11 place-items-center rounded-full bg-sand" aria-label="إغلاق" onClick={() => setMenu(false)}><X size={20} /></button></div>
-          <nav className="container-x flex-1 overflow-y-auto py-6">
-            <ul className="divide-y divide-line">
-              {NAV.map(([h, l]) => <li key={h}><Link href={h} onClick={() => setMenu(false)} className="flex items-center justify-between py-4 font-display text-2xl font-light">{l}<ArrowLeft size={18} className="text-gold" /></Link></li>)}
-              <li><Link href="/favorites" onClick={() => setMenu(false)} className="flex items-center justify-between py-4 font-display text-2xl font-light">المفضلة {fav.count > 0 && `(${fav.count})`}<Heart size={18} className="text-gold" /></Link></li>
-            </ul>
-            {categories.length > 0 && <>
-              <p className="eyebrow mt-8">الأقسام</p>
-              <div className="mt-4 flex flex-wrap gap-2">{categories.map((c) => <Link key={c.slug} href={`/shop?cat=${c.slug}`} onClick={() => setMenu(false)} className="rounded-full border hairline bg-white px-4 py-2 text-sm">{c.name}</Link>)}</div>
-            </>}
-          </nav>
-          <div className="container-x pb-8"><Link href="/custom" onClick={() => setMenu(false)} className="btn btn-solid w-full">صمّم مفروشاتك على مقاسك</Link></div>
-        </div>
-      )}
+      <AnimatePresence>
+        {menu && (
+          <motion.div className="fixed inset-0 z-50 lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <button className="absolute inset-0 bg-charcoal/30 backdrop-blur-sm" aria-label="إغلاق" onClick={() => setMenu(false)} />
+            <motion.aside role="dialog" aria-modal="true" aria-label="القائمة" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'tween', duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+              className="glass-strong absolute inset-y-2 start-2 flex w-[min(88vw,360px)] flex-col overflow-hidden rounded-3xl">
+              <div className="flex items-center justify-between border-b border-white/70 p-4"><Logo /><button className="grid h-11 w-11 place-items-center rounded-full bg-white/70" aria-label="إغلاق" onClick={() => setMenu(false)}><X size={20} /></button></div>
+              <nav className="flex-1 overflow-y-auto p-4">
+                <p className="px-2 text-xs font-bold text-[#8f6f0f]">الأقسام</p>
+                <div className="mt-2 grid grid-cols-2 gap-2">{cats.map(([h, l]) => <Link key={h} href={h} onClick={() => setMenu(false)} className="glass rounded-2xl px-3 py-3 text-sm font-medium !shadow-none">{l}</Link>)}</div>
+                <ul className="mt-6 divide-y divide-white/70">{[...LINKS, ['/favorites', `المفضلة${fav.count ? ` (${fav.count})` : ''}`] as const].map(([h, l]) => <li key={h}><Link href={h} onClick={() => setMenu(false)} className="flex items-center justify-between px-2 py-3.5 text-[17px] font-medium">{l}<ArrowLeft size={17} className="text-[#c9a227]" /></Link></li>)}</ul>
+              </nav>
+              <div className="p-4"><Link href="/custom" onClick={() => setMenu(false)} className="gold-grad flex h-12 items-center justify-center gap-2 rounded-2xl font-bold"><Ruler size={17} />اطلب تفصيل</Link></div>
+            </motion.aside>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </>
   )
 }
