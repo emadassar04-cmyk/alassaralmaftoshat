@@ -5,7 +5,22 @@ import { PAYMENT_LABEL, SITE, unitPrice } from './format'
 import { serverRpc } from './supabase'
 
 const MODEL = 'claude-opus-5-5'
-const GEMINI_MODEL = 'gemini-flash-latest'
+// Free-tier Gemini models sometimes answer 503 "high demand" / 429: retry briefly, then fall back to lighter models.
+const GEMINI_MODELS = ['gemini-flash-latest', 'gemini-flash-lite-latest', 'gemini-2.5-flash']
+const transient = (e: unknown) => { const st = (e as { status?: number })?.status; return st === 503 || st === 429 || st === 500 || st === 404 }
+async function geminiGenerate(ai: GoogleGenAI, req: Omit<Parameters<GoogleGenAI['models']['generateContent']>[0], 'model'>) {
+  let last: unknown
+  for (const model of GEMINI_MODELS) {
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try { return await ai.models.generateContent({ ...req, model }) } catch (e) {
+        last = e; if (!transient(e)) throw e
+        if ((e as { status?: number }).status === 404) break // model name not available for this key: next model
+        await new Promise((r) => setTimeout(r, 700 * (attempt + 1)))
+      }
+    }
+  }
+  throw last
+}
 export type BotProvider = 'gemini' | 'claude'
 const ST: Record<string, string> = { new: 'جديد (قيد المراجعة)', confirmed: 'مؤكد', ready: 'جاهز للاستلام/التوصيل', received: 'تم الاستلام', cancelled: 'ملغي' }
 
@@ -89,7 +104,7 @@ async function geminiReply(apiKey: string, conversationId: string, history: { ro
   const systemInstruction = `${SYSTEM_RULES}\n\n${await shopFacts()}`
   let handedOff = false
   for (let i = 0; i < 5; i++) {
-    const res = await ai.models.generateContent({ model: GEMINI_MODEL, contents, config: { systemInstruction, tools: [{ functionDeclarations: decls }] } })
+    const res = await geminiGenerate(ai, { contents, config: { systemInstruction, tools: [{ functionDeclarations: decls }] } })
     const calls = res.functionCalls ?? []
     if (calls.length) {
       const modelContent = res.candidates?.[0]?.content // keep the model's own parts (incl. thought signatures)
