@@ -1,4 +1,5 @@
 import { SITE } from './format'
+import { dayLabel, slotLabel } from './visits'
 
 const esc = (v: unknown) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const PAY: Record<string, string> = { in_store: 'في المحل', cod: 'عند التوصيل', palpay: 'PalPay', jawwal_pay: 'جوال باي', bank_palestine: 'بنك فلسطين' }
@@ -22,6 +23,14 @@ export function telegramText(event: string, d: D): string | null {
     case 'lead.created': return `📱 رقم جديد من الموقع: ${esc(d.phone)}\nكود الخصم: ${esc(d.coupon_code)}`
     case 'review.created': return `⭐ تقييم جديد ينتظر الموافقة\nالمنتج: ${esc(d.product)}\nالتقييم: ${esc(d.rating)}/5 - ${esc(d.author)}${d.body ? `\n${esc(d.body)}` : ''}`
     case 'bot.handoff': return `🙋 زبون على بوت تليجرام بحاجة لموظف\nالزبون: ${esc(d.customer_name)}\nالسبب: ${esc(d.reason)}\nرد عليه من: ${SITE}/admin/conversations/${esc(d.conversation_id)}`
+    case 'visit.created': return [`📏 <b>حجز زيارة قياس ${esc(d.number)}</b>`, `الموعد: <b>${esc(dayLabel(String(d.date), true))} - ${esc(slotLabel(String(d.slot)))}</b>`,
+      `الفرع: ${esc(d.branch)}`, `الزبون: ${esc(d.customer_name)} - ${esc(d.phone)}`, `المنطقة: ${esc(d.area)}${d.address ? ` - ${esc(d.address)}` : ''}`,
+      ...(Array.isArray(d.items) && d.items.length ? [`المطلوب: ${(d.items as unknown as string[]).map(esc).join('، ')}`] : []), ...(d.notes ? [`ملاحظات: ${esc(d.notes)}`] : []),
+      '', `أكّد الموعد من: ${SITE}/admin/visits`].join('\n')
+    case 'visits.today': {
+      const list = (d.visits as unknown as { number: string; slot: string; customer_name: string; phone: string; area: string; branch: string; status: string }[]) ?? []
+      return [`☀️ <b>زيارات القياس اليوم (${list.length})</b>`, '', ...list.map((v) => `• ${esc(slotLabel(v.slot))} — ${esc(v.customer_name)} (${esc(v.phone)})\n   ${esc(v.area)} · ${esc(v.branch)}${v.status === 'new' ? ' · ⚠️ غير مؤكد' : ''}`), '', `${SITE}/admin/visits`].join('\n')
+    }
     case 'stock.low': return `⚠️ مخزون منخفض: ${esc(d.product)} (${esc(d.variant)}) - المتبقي <b>${esc(d.stock)}</b>`
     default: return null
   }

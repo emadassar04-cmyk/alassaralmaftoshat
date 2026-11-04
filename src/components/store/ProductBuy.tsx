@@ -34,7 +34,7 @@ export function ProductBuy({ p, image, waPhone }: { p: Product; image: string | 
               className={`rounded-full border px-4 py-2.5 text-sm transition-colors ${vid === x.id ? 'border-charcoal bg-charcoal text-ivory' : 'border-line bg-white text-charcoal hover:border-charcoal'} ${out ? 'opacity-45 line-through' : ''}`}>{x.label}</button>
           })}</div></fieldset>)}
       {p.is_custom ? (
-        <Link href={`/custom?p=${p.slug}`} className="btn btn-solid w-full">اطلب تفصيل على مقاسك</Link>
+        <div className="grid gap-2 sm:grid-cols-2"><Link href={`/custom?p=${p.slug}`} className="btn btn-solid">اطلب تفصيل على مقاسك</Link><Link href={`/visit?item=${encodeURIComponent(p.categories?.name ?? '')}`} className="btn">احجز زيارة قياس</Link></div>
       ) : soldOut ? (
         <>
           <p className="rounded-[var(--radius-md)] border border-line bg-white p-3 text-center text-ink-2">غير متوفر حالياً</p>

@@ -33,6 +33,7 @@ body {
   -webkit-font-smoothing: antialiased; overflow-x: clip; text-rendering: optimizeLegibility;
 }
 ::selection { background: var(--color-champagne); color: var(--color-charcoal); }
+fieldset { min-width: 0; } /* UA default is min-content: lets horizontal scrollers inside a fieldset blow up the layout */
 :focus-visible { outline: 2px solid var(--color-brown); outline-offset: 3px; border-radius: 4px; }
 @layer components {
 .font-display { font-family: var(--font-display); letter-spacing: -.01em; }
