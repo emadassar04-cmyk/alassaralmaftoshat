@@ -2,7 +2,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
 import { ArrowLeft, Heart, Menu, Ruler, Search, ShoppingBag, X } from 'lucide-react'
 import { Logo } from './Logo'
 import { useCart } from '@/lib/cart'
@@ -30,7 +29,7 @@ export function Header({ categories = [] }: { categories?: Cat[] }) {
         </p>
       </div>
       <header className="sticky top-0 z-40 px-2 pt-2 md:px-4">
-        <div className={`glass mx-auto max-w-[1320px] rounded-3xl transition-[background,box-shadow] duration-300 ${scrolled ? '!bg-[rgba(250,247,240,.9)] shadow-[0_12px_40px_-12px_rgba(40,30,10,.25)]' : ''}`}>
+        <div className={`glass mx-auto max-w-[1320px] rounded-3xl ${scrolled ? '!bg-[#faf7f0] shadow-[0_8px_24px_-12px_rgba(40,30,10,.22)]' : ''}`}>
           <div className="flex h-[64px] items-center justify-between gap-4 px-4 md:px-6">
             <Logo />
             <nav className="hidden items-center gap-0.5 lg:flex" aria-label="روابط">
@@ -51,12 +50,11 @@ export function Header({ categories = [] }: { categories?: Cat[] }) {
           </nav>}
         </div>
       </header>
-      <AnimatePresence>
-        {menu && (
-          <motion.div className="fixed inset-0 z-50 lg:hidden" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
-            <button className="absolute inset-0 bg-charcoal/30 backdrop-blur-sm" aria-label="إغلاق" onClick={() => setMenu(false)} />
-            <motion.aside role="dialog" aria-modal="true" aria-label="القائمة" initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={{ type: 'tween', duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-              className="glass-strong absolute inset-y-2 start-2 flex w-[min(88vw,360px)] flex-col overflow-hidden rounded-3xl">
+      {menu && (
+          <div className="anim-fade fixed inset-0 z-50 lg:hidden">
+            <button className="absolute inset-0 bg-charcoal/30" aria-label="إغلاق" onClick={() => setMenu(false)} />
+            <aside role="dialog" aria-modal="true" aria-label="القائمة"
+              className="anim-slide glass-strong absolute inset-y-2 start-2 flex w-[min(88vw,360px)] flex-col overflow-hidden rounded-3xl">
               <div className="flex items-center justify-between border-b border-white/70 p-4"><Logo /><button className="grid h-11 w-11 place-items-center rounded-full bg-white/70" aria-label="إغلاق" onClick={() => setMenu(false)}><X size={20} /></button></div>
               <nav className="flex-1 overflow-y-auto p-4">
                 <p className="px-2 text-xs font-bold text-[#8f6f0f]">الأقسام</p>
@@ -64,10 +62,9 @@ export function Header({ categories = [] }: { categories?: Cat[] }) {
                 <ul className="mt-6 divide-y divide-white/70">{[...LINKS, ['/favorites', `المفضلة${fav.count ? ` (${fav.count})` : ''}`] as const].map(([h, l]) => <li key={h}><Link href={h} onClick={() => setMenu(false)} className="flex items-center justify-between px-2 py-3.5 text-[17px] font-medium">{l}<ArrowLeft size={17} className="text-[#c9a227]" /></Link></li>)}</ul>
               </nav>
               <div className="p-4"><Link href="/custom" onClick={() => setMenu(false)} className="gold-grad flex h-12 items-center justify-center gap-2 rounded-2xl font-bold"><Ruler size={17} />اطلب تفصيل</Link></div>
-            </motion.aside>
-          </motion.div>
+            </aside>
+          </div>
         )}
-      </AnimatePresence>
     </>
   )
 }

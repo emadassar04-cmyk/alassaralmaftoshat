@@ -25,10 +25,10 @@ export function ProductCard({ p, priority = false, level = 3, wa = null }: { p: 
           {img2 && <Image src={img2.url} alt="" fill sizes="(max-width:640px) 70vw, 25vw" className="object-cover opacity-0 group-hover:opacity-100" />}
           <div className="absolute start-3 top-3 flex flex-col items-start gap-1.5">
             {off > 0 && <span className="chip num bg-brown text-white">خصم {off}%</span>}
-            {p.is_custom && <span className="chip bg-white/90 text-charcoal backdrop-blur">تفصيل على المقاس</span>}
-            {p.is_bestseller && !off && !p.is_custom && <span className="chip bg-white/90 text-brown backdrop-blur">الأكثر طلباً</span>}
+            {p.is_custom && <span className="chip bg-white/90 text-charcoal">تفصيل على المقاس</span>}
+            {p.is_bestseller && !off && !p.is_custom && <span className="chip bg-white/90 text-brown">الأكثر طلباً</span>}
             {!available && <span className="chip bg-charcoal/85 text-ivory">غير متوفر حالياً</span>}
-            {low && <span className="chip bg-white/90 text-danger backdrop-blur">آخر {p.stock} قطع</span>}
+            {low && <span className="chip bg-white/90 text-danger">آخر {p.stock} قطع</span>}
           </div>
           <span className="absolute bottom-3 end-3 hidden translate-y-2 items-center gap-1.5 rounded-full bg-white/95 px-4 py-2 text-[13px] font-medium text-charcoal opacity-0 shadow-[var(--shadow-soft)] transition-all duration-500 group-hover:translate-y-0 group-hover:opacity-100 md:inline-flex">عرض التفاصيل<ArrowLeft size={14} /></span>
         </div>
