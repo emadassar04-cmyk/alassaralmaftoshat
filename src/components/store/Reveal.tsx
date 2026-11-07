@@ -7,9 +7,9 @@ export function Reveal({ children, delay = 0, className = '' }: { children: Reac
   useEffect(() => {
     const el = ref.current
     if (!el || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { el?.classList.add('in'); return }
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add('in'); io.disconnect() } }, { rootMargin: '0px 0px -60px 0px' })
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { el.classList.add('in'); io.disconnect() } }, { rootMargin: '0px 0px 80px 0px' })
     io.observe(el)
     return () => io.disconnect()
   }, [])
-  return <div ref={ref} className={`reveal ${className}`} style={{ transitionDelay: `${delay}s` }}>{children}</div>
+  return <div ref={ref} className={`reveal ${className}`} style={{ transitionDelay: `${Math.min(delay, 0.12)}s` }}>{children}</div>
 }

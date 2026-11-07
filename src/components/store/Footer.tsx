@@ -26,7 +26,7 @@ export function Footer({ branches, categories = [], social = {} }: { branches: B
           </div>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
             {branches.map((b) => (
-              <div key={b.id} className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur">
+              <div key={b.id} className="rounded-2xl border border-white/15 bg-white/[.08] p-4">
                 <h3 className="font-bold text-white">{b.name}</h3>
                 <ul className="mt-3 space-y-2 text-sm">
                   {b.address && <li className="flex gap-2"><MapPin size={16} className="mt-0.5 shrink-0 text-[#e0bd4a]" />{b.map_url ? <a href={b.map_url} target="_blank" rel="noopener" className="hover:text-white">{b.address}</a> : b.address}</li>}

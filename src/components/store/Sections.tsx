@@ -10,7 +10,7 @@ import { MEDIA, branchMedia, type Media } from '@/lib/media'
 /** Small honest caption on placeholder art, so nothing passes for a real photo of the shop or a product. */
 function Illustrative({ m, text = 'صورة تعبيرية' }: { m: Media; text?: string }) {
   if (m.real) return null
-  return <span className="absolute bottom-3 start-3 z-10 rounded-full bg-white/80 px-2.5 py-1 text-[11px] text-ink-2 backdrop-blur">{text}</span>
+  return <span className="absolute bottom-3 start-3 z-10 rounded-full bg-white/80 px-2.5 py-1 text-[11px] text-ink-2">{text}</span>
 }
 
 export function SectionHead({ eyebrow, title, sub, action, center = false }: { eyebrow: string; title: string; sub?: string; action?: { href: string; label: string }; center?: boolean }) {

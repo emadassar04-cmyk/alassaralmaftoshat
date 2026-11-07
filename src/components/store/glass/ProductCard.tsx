@@ -1,7 +1,6 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import { motion } from 'framer-motion'
 import { MessageCircle, ShoppingBag, Sofa } from 'lucide-react'
 import { useCart } from '@/lib/cart'
 import { track } from '@/lib/pixel'
@@ -10,7 +9,7 @@ import { SITE, fmt, inStock, unitPrice, unitSuffix, waLink } from '@/lib/format'
 import { FavButton } from '../FavButton'
 
 /** Glass product card: same data and links as the classic card, new presentation. */
-export function GlassProductCard({ p, i = 0, priority = false, wa = null }: { p: Product; i?: number; priority?: boolean; wa?: string | null }) {
+export function GlassProductCard({ p, priority = false, wa = null }: { p: Product; i?: number; priority?: boolean; wa?: string | null }) {
   const img = [...p.product_images].sort((a, b) => a.sort - b.sort)[0]
   const prices = p.product_variants.length ? p.product_variants.map((v) => unitPrice(p, v)) : [unitPrice(p)]
   const from = Math.min(...prices); const ranged = p.is_custom || new Set(prices).size > 1
@@ -22,10 +21,9 @@ export function GlassProductCard({ p, i = 0, priority = false, wa = null }: { p:
   const order = () => { add({ product_id: p.id, variant_id: null, slug: p.slug, name: p.name, variant_label: null, image: img?.url ?? null, unit_price: unitPrice(p), qty: 1, is_custom: false }); track('AddToCart', { content_ids: [p.id], value: unitPrice(p), currency: 'ILS' }) }
   const btn = 'flex h-11 items-center justify-center gap-1.5 rounded-2xl text-sm font-bold transition-all duration-200 active:scale-[.97]'
   return (
-    <motion.article initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: Math.min(i, 8) * 0.05, ease: [0.22, 1, 0.36, 1] }}
-      whileHover={{ y: -6 }} className="glass group relative flex flex-col rounded-3xl p-3 transition-[box-shadow,border-color] duration-300 hover:border-[#e0bd4a]/80 hover:shadow-[0_18px_48px_-12px_rgba(120,90,20,.35)]">
+    <article className="glass group relative flex flex-col rounded-3xl p-3 transition-[box-shadow,border-color] duration-200 hover:border-[#e0bd4a]/80 hover:shadow-[0_14px_36px_-14px_rgba(120,90,20,.3)]">
       <Link href={`/product/${p.slug}`} className="relative block aspect-[4/5] overflow-hidden rounded-2xl bg-gradient-to-br from-[#efe3d0] to-[#d9c6a6]" aria-label={p.name}>
-        {img ? <Image src={img.url} alt={img.alt ?? p.name} fill sizes="(max-width:640px) 92vw, (max-width:1024px) 45vw, 24vw" preload={priority} fetchPriority={priority ? 'high' : 'auto'} className={`object-cover transition-transform duration-500 group-hover:scale-[1.06] ${available ? '' : 'grayscale-[40%]'}`} />
+        {img ? <Image src={img.url} alt={img.alt ?? p.name} fill sizes="(max-width:640px) 92vw, (max-width:1024px) 45vw, 24vw" preload={priority} fetchPriority={priority ? 'high' : 'auto'} className={`object-cover transition-transform duration-500 md:group-hover:scale-[1.03] ${available ? '' : 'grayscale-[40%]'}`} />
           : <span className="absolute inset-0 grid place-items-center text-[#8f6f0f]/50"><Sofa size={48} strokeWidth={1.2} /></span>}
         <div className="absolute start-3 top-3 flex flex-col items-start gap-1.5">
           {off > 0 && <span dir="ltr" className="num rounded-full bg-gradient-to-l from-[#c0392b] to-[#c9a227] px-3 py-1 text-xs font-bold text-white shadow">-{off}%</span>}
@@ -49,6 +47,6 @@ export function GlassProductCard({ p, i = 0, priority = false, wa = null }: { p:
             className={`${btn} bg-[#1f9d55] text-white hover:bg-[#178a49]`}><MessageCircle size={17} />استفسار</a>}
         </div>
       </div>
-    </motion.article>
+    </article>
   )
 }

@@ -12,8 +12,6 @@ export default async function Shop() {
   return (
     <div className="relative">
       <section className="relative overflow-hidden pb-16 pt-8 md:pb-20 md:pt-12">
-        <div aria-hidden className="glow-drift absolute -top-24 start-[10%] h-72 w-72 rounded-full bg-[#c9a227]/30 blur-3xl" />
-        <div aria-hidden className="glow-drift absolute -bottom-16 end-[8%] h-64 w-64 rounded-full bg-[#0f4c5c]/20 blur-3xl [animation-delay:-6s]" />
         <div className="container-x relative">
           <Breadcrumbs items={[{ label: 'المتجر' }]} />
           <h1 className="mt-6 font-display text-[clamp(2.6rem,7vw,4.5rem)] font-medium leading-tight text-charcoal">المتجر</h1>
